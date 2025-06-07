@@ -90,9 +90,15 @@ const Index = () => {
   };
 
   const handleTargetsSet = (targets: NutritionTargets) => {
+    console.log('Setting new targets:', targets);
     setNutritionTargets(targets);
     setHasSetTargets(true);
     setCurrentStep('planning');
+  };
+
+  const handleStepChange = (step: 'setup' | 'planning' | 'tracking') => {
+    console.log('Changing step to:', step);
+    setCurrentStep(step);
   };
 
   const steps = [
@@ -123,19 +129,23 @@ const Index = () => {
             <div className="hidden md:flex items-center space-x-4">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
-                  <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all duration-200 ${
-                    currentStep === step.id 
-                      ? 'bg-emerald-100 text-emerald-700' 
-                      : hasSetTargets && index <= steps.findIndex(s => s.id === currentStep)
-                        ? 'bg-green-50 text-green-600'
-                        : 'bg-gray-50 text-gray-500'
-                  }`}>
+                  <button
+                    onClick={() => handleStepChange(step.id as 'setup' | 'planning' | 'tracking')}
+                    className={`flex items-center space-x-2 px-3 py-1.5 rounded-full transition-all duration-200 cursor-pointer ${
+                      currentStep === step.id 
+                        ? 'bg-emerald-100 text-emerald-700' 
+                        : hasSetTargets || step.id === 'setup'
+                          ? 'bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                    }`}
+                    disabled={!hasSetTargets && step.id !== 'setup'}
+                  >
                     <step.icon className="w-4 h-4" />
                     <span className="text-sm font-medium">{step.title}</span>
                     {hasSetTargets && index <= steps.findIndex(s => s.id === currentStep) && (
                       <CheckCircle className="w-4 h-4" />
                     )}
-                  </div>
+                  </button>
                   {index < steps.length - 1 && (
                     <ArrowRight className="w-4 h-4 text-gray-300 mx-2" />
                   )}
@@ -157,7 +167,7 @@ const Index = () => {
               </div>
               <h2 className="text-4xl font-bold text-gray-900 mb-4">Welcome to NutriAI</h2>
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                Let's start by setting your daily nutrition goals. Choose a preset or customize your targets.
+                Set your daily nutrition goals and get AI-powered meal suggestions tailored to your specific needs.
               </p>
             </div>
 
@@ -174,35 +184,35 @@ const Index = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3">
                       <Sparkles className="h-5 w-5 text-emerald-600" />
-                      Why Set Targets?
+                      How It Works
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <Target className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Personalized Recommendations</h4>
-                        <p className="text-sm text-gray-600">Get AI-powered meal suggestions based on your specific needs</p>
+                        <h4 className="font-semibold text-gray-900">Set Your Targets</h4>
+                        <p className="text-sm text-gray-600">Define your daily protein, carbs, fats, and vitamin goals</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <TrendingUp className="w-4 h-4 text-blue-600" />
+                        <ChefHat className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Track Progress</h4>
-                        <p className="text-sm text-gray-600">Monitor your daily intake and see how close you are to your goals</p>
+                        <h4 className="font-semibold text-gray-900">Get Smart Suggestions</h4>
+                        <p className="text-sm text-gray-600">AI analyzes your remaining needs and suggests optimal meals</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-4 h-4 text-purple-600" />
+                        <TrendingUp className="w-4 h-4 text-purple-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">Smart Assistance</h4>
-                        <p className="text-sm text-gray-600">Chat with our AI nutritionist for instant advice and tips</p>
+                        <h4 className="font-semibold text-gray-900">Track Progress</h4>
+                        <p className="text-sm text-gray-600">Monitor your intake and get real-time nutrition feedback</p>
                       </div>
                     </div>
                   </CardContent>
@@ -227,16 +237,26 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">Plan Your Meals</h2>
-                <p className="text-gray-600 mt-2">Add ingredients or complete meals to build your daily nutrition plan</p>
+                <p className="text-gray-600 mt-2">Get AI-powered suggestions based on your remaining nutritional needs</p>
               </div>
-              <Button 
-                onClick={() => setCurrentStep('tracking')}
-                className="gradient-primary hover:shadow-lg text-white"
-                disabled={currentNutrition.calories === 0}
-              >
-                View Progress
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => handleStepChange('setup')}
+                  className="hover:bg-emerald-50 hover:text-emerald-700"
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Adjust Goals
+                </Button>
+                <Button 
+                  onClick={() => handleStepChange('tracking')}
+                  className="gradient-primary hover:shadow-lg text-white"
+                  disabled={currentNutrition.calories === 0}
+                >
+                  View Progress
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-12 gap-8">
@@ -254,46 +274,30 @@ const Index = () => {
                 <Card className="glass-card">
                   <CardHeader>
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                      <Search className="h-5 w-5 text-emerald-600" />
-                      Add to Your Plan
+                      <Sparkles className="h-5 w-5 text-emerald-600" />
+                      Smart Suggestions
                     </CardTitle>
+                    <p className="text-sm text-gray-600">Based on your remaining nutrition needs</p>
                   </CardHeader>
                   <CardContent>
-                    <Tabs defaultValue="search" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-1 rounded-xl">
-                        <TabsTrigger 
-                          value="search" 
-                          className="flex items-center space-x-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                        >
-                          <Search className="h-4 w-4" />
-                          <span>Ingredients</span>
-                        </TabsTrigger>
-                        <TabsTrigger 
-                          value="suggestions" 
-                          className="flex items-center space-x-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                        >
-                          <ChefHat className="h-4 w-4" />
-                          <span>Meals</span>
-                        </TabsTrigger>
-                      </TabsList>
-                      
-                      <div className="mt-4">
-                        <TabsContent value="search" className="mt-0">
-                          <IngredientSearch onAddIngredient={handleAddIngredient} />
-                        </TabsContent>
-                        
-                        <TabsContent value="suggestions" className="mt-0">
-                          <MealSuggestions 
-                            progress={dailyProgress}
-                            onAddMeal={handleAddMeal}
-                          />
-                        </TabsContent>
-                      </div>
-                    </Tabs>
+                    <MealSuggestions 
+                      progress={dailyProgress}
+                      onAddMeal={handleAddMeal}
+                    />
                   </CardContent>
                 </Card>
 
-                <AIChat progress={dailyProgress} />
+                <Card className="glass-card">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                      <Search className="h-5 w-5 text-blue-600" />
+                      Search Ingredients
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IngredientSearch onAddIngredient={handleAddIngredient} />
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
@@ -310,14 +314,14 @@ const Index = () => {
               <div className="flex gap-3">
                 <Button 
                   variant="outline"
-                  onClick={() => setCurrentStep('planning')}
+                  onClick={() => handleStepChange('planning')}
                   className="hover:bg-gray-50"
                 >
                   <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
                   Back to Planning
                 </Button>
                 <Button 
-                  onClick={() => setCurrentStep('setup')}
+                  onClick={() => handleStepChange('setup')}
                   variant="outline"
                   className="hover:bg-emerald-50 hover:text-emerald-700"
                 >
