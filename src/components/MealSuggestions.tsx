@@ -1,8 +1,7 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, ChefHat, Plus } from 'lucide-react';
+import { Clock, ChefHat, Plus, Sparkles } from 'lucide-react';
 import { MealSuggestion, DailyProgress } from '../types/nutrition';
 
 interface MealSuggestionsProps {
@@ -106,61 +105,61 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-green-100 text-green-800';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800';
-      case 'Hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Easy': return 'bg-green-100 text-green-800 border-green-200';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Hard': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   return (
-    <Card className="w-full animate-fade-in">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-health-green">
-          <ChefHat className="h-5 w-5" />
-          Meal Suggestions
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {suggestions.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <ChefHat className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>You're doing great! Your nutrition targets are nearly met.</p>
-            <p className="text-sm">Add more ingredients to see personalized meal suggestions.</p>
+    <div className="space-y-4">
+      {suggestions.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <ChefHat className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <p className="font-medium">Great progress!</p>
+          <p className="text-sm">Your nutrition targets are nearly met.</p>
+          <p className="text-xs mt-2">Add more ingredients to see personalized suggestions.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-4 w-4 text-emerald-500" />
+            <span className="text-sm font-medium text-gray-700">AI Recommendations</span>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {suggestions.map(meal => (
-              <div key={meal.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">{meal.name}</h4>
-                    <div className="flex gap-2 mb-2">
-                      <Badge variant="outline" className={getDifficultyColor(meal.difficulty)}>
-                        {meal.difficulty}
-                      </Badge>
-                      <Badge variant="outline" className="text-health-green border-health-green">
-                        {meal.category}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="h-4 w-4" />
-                      {meal.prepTime} minutes
-                    </div>
+          
+          {suggestions.map(meal => (
+            <div key={meal.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 hover:border-emerald-200">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 mb-2">{meal.name}</h4>
+                  <div className="flex gap-2 mb-2">
+                    <Badge variant="outline" className={`text-xs ${getDifficultyColor(meal.difficulty)}`}>
+                      {meal.difficulty}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                      {meal.category}
+                    </Badge>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => onAddMeal(meal)}
-                    className="bg-health-green hover:bg-health-green-dark"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <Clock className="h-4 w-4" />
+                    {meal.prepTime} minutes
+                  </div>
                 </div>
+                <Button
+                  size="sm"
+                  onClick={() => onAddMeal(meal)}
+                  className="gradient-primary hover:shadow-lg text-white"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
 
-                <div className="text-sm space-y-2">
-                  <div className="font-medium text-gray-700">Ingredients:</div>
-                  <div className="text-gray-600">
+              <div className="text-sm space-y-3">
+                <div>
+                  <div className="font-medium text-gray-700 mb-1">Ingredients:</div>
+                  <div className="text-gray-600 text-xs">
                     {meal.ingredients.map((item, index) => (
                       <span key={index}>
                         {item.ingredient.name} ({item.amount}g)
@@ -168,28 +167,32 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
                       </span>
                     ))}
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 pt-3 border-t">
-                    <div className="text-xs">
-                      <span className="font-medium text-health-protein">Protein:</span> {meal.totalNutrition.protein.toFixed(1)}g
-                    </div>
-                    <div className="text-xs">
-                      <span className="font-medium text-health-carbs">Carbs:</span> {meal.totalNutrition.carbs.toFixed(1)}g
-                    </div>
-                    <div className="text-xs">
-                      <span className="font-medium text-health-fats">Fats:</span> {meal.totalNutrition.fats.toFixed(1)}g
-                    </div>
-                    <div className="text-xs">
-                      <span className="font-medium">Calories:</span> {meal.totalNutrition.calories.toFixed(0)}
-                    </div>
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                  <div className="bg-emerald-50 rounded px-2 py-1 text-center">
+                    <div className="text-xs font-medium text-emerald-700">{meal.totalNutrition.protein.toFixed(1)}g</div>
+                    <div className="text-xs text-emerald-600">Protein</div>
+                  </div>
+                  <div className="bg-blue-50 rounded px-2 py-1 text-center">
+                    <div className="text-xs font-medium text-blue-700">{meal.totalNutrition.carbs.toFixed(1)}g</div>
+                    <div className="text-xs text-blue-600">Carbs</div>
+                  </div>
+                  <div className="bg-purple-50 rounded px-2 py-1 text-center">
+                    <div className="text-xs font-medium text-purple-700">{meal.totalNutrition.fats.toFixed(1)}g</div>
+                    <div className="text-xs text-purple-600">Fats</div>
+                  </div>
+                  <div className="bg-gray-50 rounded px-2 py-1 text-center">
+                    <div className="text-xs font-medium text-gray-700">{meal.totalNutrition.calories.toFixed(0)}</div>
+                    <div className="text-xs text-gray-600">Cal</div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
