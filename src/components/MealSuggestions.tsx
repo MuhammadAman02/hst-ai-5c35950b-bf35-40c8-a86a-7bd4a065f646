@@ -1,8 +1,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, ChefHat, Plus, Sparkles, Target, Zap } from 'lucide-react';
-import { MealSuggestion, DailyProgress, NutritionInfo } from '../types/nutrition';
+import { Clock, ChefHat, Plus, Sparkles, Target, Zap, Calculator } from 'lucide-react';
+import { MealSuggestion, DailyProgress, NutritionInfo, Ingredient } from '../types/nutrition';
+import { ingredients } from '../data/ingredients';
 
 interface MealSuggestionsProps {
   progress: DailyProgress;
@@ -12,197 +13,246 @@ interface MealSuggestionsProps {
 const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }) => {
   console.log('MealSuggestions rendered with progress:', progress);
 
-  // Analyze nutritional gaps and generate targeted suggestions
-  const generateIntelligentSuggestions = (): MealSuggestion[] => {
+  // Calculate optimal portion sizes to meet specific nutritional targets
+  const calculateOptimalPortions = (targetNutrient: keyof NutritionInfo, targetAmount: number, primaryIngredients: Ingredient[]): { ingredient: Ingredient; amount: number }[] => {
+    const result: { ingredient: Ingredient; amount: number }[] = [];
+    let remainingTarget = targetAmount;
+
+    // Sort ingredients by nutrient density for the target nutrient
+    const sortedIngredients = [...primaryIngredients].sort((a, b) => 
+      b.nutritionPer100g[targetNutrient] - a.nutritionPer100g[targetNutrient]
+    );
+
+    for (const ingredient of sortedIngredients) {
+      if (remainingTarget <= 0) break;
+
+      const nutrientPer100g = ingredient.nutritionPer100g[targetNutrient];
+      if (nutrientPer100g <= 0) continue;
+
+      // Calculate amount needed to get remaining target from this ingredient
+      let neededAmount = (remainingTarget / nutrientPer100g) * 100;
+      
+      // Cap at reasonable serving sizes
+      const maxServing = ingredient.commonServingSize * 2.5; // Allow up to 2.5x normal serving
+      neededAmount = Math.min(neededAmount, maxServing);
+      
+      // Round to reasonable portions
+      neededAmount = Math.round(neededAmount / 10) * 10; // Round to nearest 10g
+      
+      if (neededAmount >= 20) { // Only include if meaningful amount
+        result.push({ ingredient, amount: neededAmount });
+        remainingTarget -= (nutrientPer100g * neededAmount / 100);
+      }
+    }
+
+    return result;
+  };
+
+  // Generate targeted meal suggestions based on remaining nutritional needs
+  const generateTargetedMealSuggestions = (): MealSuggestion[] => {
     const remaining = progress.remaining;
     const suggestions: MealSuggestion[] = [];
 
-    console.log('Analyzing nutritional gaps:', remaining);
+    console.log('Generating targeted suggestions for remaining nutrients:', remaining);
 
-    // High Protein Needs (>25g remaining)
-    if (remaining.protein > 25) {
-      suggestions.push({
-        id: 'high-protein-chicken',
-        name: 'Grilled Chicken Power Bowl',
-        ingredients: [
-          { ingredient: { id: '1', name: 'Chicken Breast', category: 'Protein', nutritionPer100g: { protein: 31, carbs: 0, fats: 3.6, calories: 165, fiber: 0, vitaminC: 0, vitaminD: 0.1, calcium: 15, iron: 0.7, potassium: 256 }, commonServingSize: 150, unit: 'g' }, amount: 200 },
-          { ingredient: { id: '4', name: 'Broccoli', category: 'Vegetables', nutritionPer100g: { protein: 2.8, carbs: 7, fats: 0.4, calories: 34, fiber: 2.6, vitaminC: 89, vitaminD: 0, calcium: 47, iron: 0.7, potassium: 316 }, commonServingSize: 100, unit: 'g' }, amount: 150 },
-          { ingredient: { id: '2', name: 'Brown Rice', category: 'Carbs', nutritionPer100g: { protein: 2.6, carbs: 23, fats: 0.9, calories: 111, fiber: 1.8, vitaminC: 0, vitaminD: 0, calcium: 10, iron: 0.4, potassium: 43 }, commonServingSize: 100, unit: 'g' }, amount: 100 }
-        ],
-        totalNutrition: {
-          protein: 66.4,
-          carbs: 33.5,
-          fats: 8.55,
-          calories: 475,
-          fiber: 6.6,
-          vitaminC: 133.5,
-          vitaminD: 0.2,
-          calcium: 100.5,
-          iron: 2.45,
-          potassium: 1001
-        },
-        prepTime: 25,
-        difficulty: 'Easy',
-        category: 'Lunch',
-        targetNutrient: 'protein',
-        reason: `Perfect for your high protein needs! Provides ${66.4}g protein to help reach your ${progress.targets.protein}g target.`
-      });
+    // HIGH PROTEIN MEAL - When user needs significant protein (>20g)
+    if (remaining.protein > 20) {
+      const proteinIngredients = ingredients.filter(ing => 
+        ing.category === 'Protein' && ing.nutritionPer100g.protein > 15
+      );
+      
+      const proteinPortions = calculateOptimalPortions('protein', remaining.protein * 0.8, proteinIngredients);
+      
+      // Add complementary ingredients for a complete meal
+      const chickenBreast = ingredients.find(ing => ing.name === 'Chicken Breast');
+      const broccoli = ingredients.find(ing => ing.name === 'Broccoli');
+      const brownRice = ingredients.find(ing => ing.name === 'Brown Rice');
+
+      if (chickenBreast && broccoli && brownRice) {
+        // Calculate chicken amount to provide most of the needed protein
+        const chickenAmount = Math.round((remaining.protein * 0.7 / chickenBreast.nutritionPer100g.protein) * 100);
+        const finalChickenAmount = Math.min(Math.max(chickenAmount, 100), 300); // Between 100-300g
+
+        const mealIngredients = [
+          { ingredient: chickenBreast, amount: finalChickenAmount },
+          { ingredient: broccoli, amount: 150 },
+          { ingredient: brownRice, amount: 80 }
+        ];
+
+        // Calculate total nutrition
+        const totalNutrition = mealIngredients.reduce((total, item) => {
+          const factor = item.amount / 100;
+          return {
+            protein: total.protein + (item.ingredient.nutritionPer100g.protein * factor),
+            carbs: total.carbs + (item.ingredient.nutritionPer100g.carbs * factor),
+            fats: total.fats + (item.ingredient.nutritionPer100g.fats * factor),
+            calories: total.calories + (item.ingredient.nutritionPer100g.calories * factor),
+            fiber: total.fiber + (item.ingredient.nutritionPer100g.fiber * factor),
+            vitaminC: total.vitaminC + (item.ingredient.nutritionPer100g.vitaminC * factor),
+            vitaminD: total.vitaminD + (item.ingredient.nutritionPer100g.vitaminD * factor),
+            calcium: total.calcium + (item.ingredient.nutritionPer100g.calcium * factor),
+            iron: total.iron + (item.ingredient.nutritionPer100g.iron * factor),
+            potassium: total.potassium + (item.ingredient.nutritionPer100g.potassium * factor)
+          };
+        }, { protein: 0, carbs: 0, fats: 0, calories: 0, fiber: 0, vitaminC: 0, vitaminD: 0, calcium: 0, iron: 0, potassium: 0 });
+
+        suggestions.push({
+          id: 'targeted-protein-meal',
+          name: `High-Protein Power Meal (${totalNutrition.protein.toFixed(0)}g protein)`,
+          ingredients: mealIngredients,
+          totalNutrition,
+          prepTime: 25,
+          difficulty: 'Easy',
+          category: 'Lunch',
+          targetNutrient: 'protein',
+          reason: `Precisely calculated to provide ${totalNutrition.protein.toFixed(1)}g protein - covering ${((totalNutrition.protein / remaining.protein) * 100).toFixed(0)}% of your remaining ${remaining.protein.toFixed(1)}g protein target.`
+        });
+      }
     }
 
-    // High Carb Needs (>40g remaining)
-    if (remaining.carbs > 40) {
-      suggestions.push({
-        id: 'high-carb-oats',
-        name: 'Power Breakfast Oats',
-        ingredients: [
-          { ingredient: { id: '5', name: 'Oats', category: 'Carbs', nutritionPer100g: { protein: 17, carbs: 66, fats: 7, calories: 389, fiber: 11, vitaminC: 0, vitaminD: 0, calcium: 54, iron: 5, potassium: 429 }, commonServingSize: 50, unit: 'g' }, amount: 80 },
-          { ingredient: { id: '9', name: 'Banana', category: 'Carbs', nutritionPer100g: { protein: 1.1, carbs: 23, fats: 0.3, calories: 89, fiber: 2.6, vitaminC: 8.7, vitaminD: 0, calcium: 5, iron: 0.3, potassium: 358 }, commonServingSize: 120, unit: 'g' }, amount: 120 },
-          { ingredient: { id: '8', name: 'Almonds', category: 'Fats', nutritionPer100g: { protein: 21, carbs: 22, fats: 50, calories: 579, fiber: 12, vitaminC: 0, vitaminD: 0, calcium: 269, iron: 3.7, potassium: 733 }, commonServingSize: 30, unit: 'g' }, amount: 20 }
-        ],
-        totalNutrition: {
-          protein: 19.12,
-          carbs: 82.2,
-          fats: 15.66,
-          calories: 525,
-          fiber: 14.42,
-          vitaminC: 10.44,
-          vitaminD: 0,
-          calcium: 102.18,
-          iron: 4.74,
-          potassium: 833.86
-        },
-        prepTime: 10,
-        difficulty: 'Easy',
-        category: 'Breakfast',
-        targetNutrient: 'carbs',
-        reason: `Great for your carb needs! Provides ${82.2}g complex carbs plus fiber and healthy fats.`
-      });
+    // HIGH CARB MEAL - When user needs significant carbs (>30g)
+    if (remaining.carbs > 30) {
+      const oats = ingredients.find(ing => ing.name === 'Oats');
+      const banana = ingredients.find(ing => ing.name === 'Banana');
+      const greekYogurt = ingredients.find(ing => ing.name === 'Greek Yogurt');
+
+      if (oats && banana && greekYogurt) {
+        // Calculate oats amount to provide most of the needed carbs
+        const oatsAmount = Math.round((remaining.carbs * 0.6 / oats.nutritionPer100g.carbs) * 100);
+        const finalOatsAmount = Math.min(Math.max(oatsAmount, 50), 120); // Between 50-120g
+
+        const mealIngredients = [
+          { ingredient: oats, amount: finalOatsAmount },
+          { ingredient: banana, amount: 120 },
+          { ingredient: greekYogurt, amount: 150 }
+        ];
+
+        const totalNutrition = mealIngredients.reduce((total, item) => {
+          const factor = item.amount / 100;
+          return {
+            protein: total.protein + (item.ingredient.nutritionPer100g.protein * factor),
+            carbs: total.carbs + (item.ingredient.nutritionPer100g.carbs * factor),
+            fats: total.fats + (item.ingredient.nutritionPer100g.fats * factor),
+            calories: total.calories + (item.ingredient.nutritionPer100g.calories * factor),
+            fiber: total.fiber + (item.ingredient.nutritionPer100g.fiber * factor),
+            vitaminC: total.vitaminC + (item.ingredient.nutritionPer100g.vitaminC * factor),
+            vitaminD: total.vitaminD + (item.ingredient.nutritionPer100g.vitaminD * factor),
+            calcium: total.calcium + (item.ingredient.nutritionPer100g.calcium * factor),
+            iron: total.iron + (item.ingredient.nutritionPer100g.iron * factor),
+            potassium: total.potassium + (item.ingredient.nutritionPer100g.potassium * factor)
+          };
+        }, { protein: 0, carbs: 0, fats: 0, calories: 0, fiber: 0, vitaminC: 0, vitaminD: 0, calcium: 0, iron: 0, potassium: 0 });
+
+        suggestions.push({
+          id: 'targeted-carb-meal',
+          name: `Energy Boost Bowl (${totalNutrition.carbs.toFixed(0)}g carbs)`,
+          ingredients: mealIngredients,
+          totalNutrition,
+          prepTime: 10,
+          difficulty: 'Easy',
+          category: 'Breakfast',
+          targetNutrient: 'carbs',
+          reason: `Calculated to provide ${totalNutrition.carbs.toFixed(1)}g complex carbs - covering ${((totalNutrition.carbs / remaining.carbs) * 100).toFixed(0)}% of your remaining ${remaining.carbs.toFixed(1)}g carb target.`
+        });
+      }
     }
 
-    // High Fat Needs (>20g remaining)
-    if (remaining.fats > 20) {
-      suggestions.push({
-        id: 'high-fat-salmon',
-        name: 'Omega-Rich Salmon Salad',
-        ingredients: [
-          { ingredient: { id: '3', name: 'Salmon', category: 'Protein', nutritionPer100g: { protein: 25, carbs: 0, fats: 13, calories: 208, fiber: 0, vitaminC: 0, vitaminD: 11, calcium: 12, iron: 0.8, potassium: 363 }, commonServingSize: 120, unit: 'g' }, amount: 150 },
-          { ingredient: { id: '10', name: 'Avocado', category: 'Fats', nutritionPer100g: { protein: 2, carbs: 9, fats: 15, calories: 160, fiber: 7, vitaminC: 10, vitaminD: 0, calcium: 12, iron: 0.6, potassium: 485 }, commonServingSize: 100, unit: 'g' }, amount: 100 },
-          { ingredient: { id: '8', name: 'Almonds', category: 'Fats', nutritionPer100g: { protein: 21, carbs: 22, fats: 50, calories: 579, fiber: 12, vitaminC: 0, vitaminD: 0, calcium: 269, iron: 3.7, potassium: 733 }, commonServingSize: 30, unit: 'g' }, amount: 25 }
-        ],
-        totalNutrition: {
-          protein: 42.75,
-          carbs: 14.5,
-          fats: 44.5,
-          calories: 623,
-          fiber: 10,
-          vitaminC: 10,
-          vitaminD: 16.5,
-          calcium: 98.25,
-          iron: 2.125,
-          potassium: 1211.75
-        },
-        prepTime: 15,
-        difficulty: 'Easy',
-        category: 'Lunch',
-        targetNutrient: 'fats',
-        reason: `Perfect for healthy fats! Provides ${44.5}g of omega-3 rich fats plus quality protein.`
-      });
+    // BALANCED COMPLETION MEAL - When user needs multiple nutrients
+    if (remaining.protein > 10 && remaining.carbs > 15 && remaining.fats > 8) {
+      const salmon = ingredients.find(ing => ing.name === 'Salmon');
+      const sweetPotato = ingredients.find(ing => ing.name === 'Sweet Potato');
+      const avocado = ingredients.find(ing => ing.name === 'Avocado');
+
+      if (salmon && sweetPotato && avocado) {
+        // Calculate portions to balance all three macros
+        const salmonAmount = Math.round((remaining.protein * 0.5 / salmon.nutritionPer100g.protein) * 100);
+        const sweetPotatoAmount = Math.round((remaining.carbs * 0.4 / sweetPotato.nutritionPer100g.carbs) * 100);
+        const avocadoAmount = Math.round((remaining.fats * 0.4 / avocado.nutritionPer100g.fats) * 100);
+
+        const mealIngredients = [
+          { ingredient: salmon, amount: Math.min(Math.max(salmonAmount, 100), 200) },
+          { ingredient: sweetPotato, amount: Math.min(Math.max(sweetPotatoAmount, 100), 250) },
+          { ingredient: avocado, amount: Math.min(Math.max(avocadoAmount, 50), 150) }
+        ];
+
+        const totalNutrition = mealIngredients.reduce((total, item) => {
+          const factor = item.amount / 100;
+          return {
+            protein: total.protein + (item.ingredient.nutritionPer100g.protein * factor),
+            carbs: total.carbs + (item.ingredient.nutritionPer100g.carbs * factor),
+            fats: total.fats + (item.ingredient.nutritionPer100g.fats * factor),
+            calories: total.calories + (item.ingredient.nutritionPer100g.calories * factor),
+            fiber: total.fiber + (item.ingredient.nutritionPer100g.fiber * factor),
+            vitaminC: total.vitaminC + (item.ingredient.nutritionPer100g.vitaminC * factor),
+            vitaminD: total.vitaminD + (item.ingredient.nutritionPer100g.vitaminD * factor),
+            calcium: total.calcium + (item.ingredient.nutritionPer100g.calcium * factor),
+            iron: total.iron + (item.ingredient.nutritionPer100g.iron * factor),
+            potassium: total.potassium + (item.ingredient.nutritionPer100g.potassium * factor)
+          };
+        }, { protein: 0, carbs: 0, fats: 0, calories: 0, fiber: 0, vitaminC: 0, vitaminD: 0, calcium: 0, iron: 0, potassium: 0 });
+
+        suggestions.push({
+          id: 'targeted-balanced-meal',
+          name: `Complete Nutrition Plate`,
+          ingredients: mealIngredients,
+          totalNutrition,
+          prepTime: 30,
+          difficulty: 'Medium',
+          category: 'Dinner',
+          targetNutrient: 'balanced',
+          reason: `Balanced meal providing ${totalNutrition.protein.toFixed(1)}g protein, ${totalNutrition.carbs.toFixed(1)}g carbs, and ${totalNutrition.fats.toFixed(1)}g healthy fats to help complete your daily targets.`
+        });
+      }
     }
 
-    // Vitamin C Needs (>30mg remaining)
-    if (remaining.vitaminC > 30) {
-      suggestions.push({
-        id: 'vitamin-c-smoothie',
-        name: 'Vitamin C Power Smoothie',
-        ingredients: [
-          { ingredient: { id: '11', name: 'Orange', category: 'Carbs', nutritionPer100g: { protein: 0.9, carbs: 12, fats: 0.1, calories: 47, fiber: 2.4, vitaminC: 53, vitaminD: 0, calcium: 40, iron: 0.1, potassium: 181 }, commonServingSize: 150, unit: 'g' }, amount: 200 },
-          { ingredient: { id: '12', name: 'Strawberries', category: 'Carbs', nutritionPer100g: { protein: 0.7, carbs: 8, fats: 0.3, calories: 32, fiber: 2, vitaminC: 59, vitaminD: 0, calcium: 16, iron: 0.4, potassium: 153 }, commonServingSize: 100, unit: 'g' }, amount: 150 },
-          { ingredient: { id: '6', name: 'Greek Yogurt', category: 'Protein', nutritionPer100g: { protein: 10, carbs: 4, fats: 0.4, calories: 59, fiber: 0, vitaminC: 0, vitaminD: 0, calcium: 110, iron: 0.1, potassium: 141 }, commonServingSize: 170, unit: 'g' }, amount: 150 }
-        ],
-        totalNutrition: {
-          protein: 16.85,
-          carbs: 42,
-          fats: 0.85,
-          calories: 248,
-          fiber: 7.8,
-          vitaminC: 194.5,
-          vitaminD: 0,
-          calcium: 189,
-          iron: 0.75,
-          potassium: 754
-        },
-        prepTime: 5,
-        difficulty: 'Easy',
-        category: 'Snack',
-        targetNutrient: 'vitaminC',
-        reason: `Vitamin C powerhouse! Provides ${194.5}mg vitamin C to boost your immune system.`
-      });
+    // QUICK PROTEIN SNACK - For smaller protein gaps (10-25g)
+    if (remaining.protein > 10 && remaining.protein <= 25) {
+      const greekYogurt = ingredients.find(ing => ing.name === 'Greek Yogurt');
+      const almonds = ingredients.find(ing => ing.name === 'Almonds');
+
+      if (greekYogurt && almonds) {
+        const yogurtAmount = Math.round((remaining.protein * 0.7 / greekYogurt.nutritionPer100g.protein) * 100);
+        const finalYogurtAmount = Math.min(Math.max(yogurtAmount, 150), 300);
+
+        const mealIngredients = [
+          { ingredient: greekYogurt, amount: finalYogurtAmount },
+          { ingredient: almonds, amount: 25 }
+        ];
+
+        const totalNutrition = mealIngredients.reduce((total, item) => {
+          const factor = item.amount / 100;
+          return {
+            protein: total.protein + (item.ingredient.nutritionPer100g.protein * factor),
+            carbs: total.carbs + (item.ingredient.nutritionPer100g.carbs * factor),
+            fats: total.fats + (item.ingredient.nutritionPer100g.fats * factor),
+            calories: total.calories + (item.ingredient.nutritionPer100g.calories * factor),
+            fiber: total.fiber + (item.ingredient.nutritionPer100g.fiber * factor),
+            vitaminC: total.vitaminC + (item.ingredient.nutritionPer100g.vitaminC * factor),
+            vitaminD: total.vitaminD + (item.ingredient.nutritionPer100g.vitaminD * factor),
+            calcium: total.calcium + (item.ingredient.nutritionPer100g.calcium * factor),
+            iron: total.iron + (item.ingredient.nutritionPer100g.iron * factor),
+            potassium: total.potassium + (item.ingredient.nutritionPer100g.potassium * factor)
+          };
+        }, { protein: 0, carbs: 0, fats: 0, calories: 0, fiber: 0, vitaminC: 0, vitaminD: 0, calcium: 0, iron: 0, potassium: 0 });
+
+        suggestions.push({
+          id: 'targeted-protein-snack',
+          name: `Protein Power Snack (${totalNutrition.protein.toFixed(0)}g protein)`,
+          ingredients: mealIngredients,
+          totalNutrition,
+          prepTime: 2,
+          difficulty: 'Easy',
+          category: 'Snack',
+          targetNutrient: 'protein',
+          reason: `Quick snack providing ${totalNutrition.protein.toFixed(1)}g protein to help reach your remaining ${remaining.protein.toFixed(1)}g protein target.`
+        });
+      }
     }
 
-    // Fiber Needs (>10g remaining)
-    if (remaining.fiber > 10) {
-      suggestions.push({
-        id: 'high-fiber-bowl',
-        name: 'Fiber-Rich Buddha Bowl',
-        ingredients: [
-          { ingredient: { id: '13', name: 'Quinoa', category: 'Carbs', nutritionPer100g: { protein: 14, carbs: 64, fats: 6, calories: 368, fiber: 7, vitaminC: 0, vitaminD: 0, calcium: 47, iron: 4.6, potassium: 563 }, commonServingSize: 100, unit: 'g' }, amount: 100 },
-          { ingredient: { id: '14', name: 'Black Beans', category: 'Protein', nutritionPer100g: { protein: 21, carbs: 63, fats: 1, calories: 341, fiber: 15, vitaminC: 0, vitaminD: 0, calcium: 160, iron: 5.0, potassium: 1483 }, commonServingSize: 100, unit: 'g' }, amount: 80 },
-          { ingredient: { id: '4', name: 'Broccoli', category: 'Vegetables', nutritionPer100g: { protein: 2.8, carbs: 7, fats: 0.4, calories: 34, fiber: 2.6, vitaminC: 89, vitaminD: 0, calcium: 47, iron: 0.7, potassium: 316 }, commonServingSize: 100, unit: 'g' }, amount: 150 }
-        ],
-        totalNutrition: {
-          protein: 35,
-          carbs: 124.5,
-          fats: 7.2,
-          calories: 691,
-          fiber: 21.9,
-          vitaminC: 133.5,
-          vitaminD: 0,
-          calcium: 198.5,
-          iron: 9.65,
-          potassium: 1800
-        },
-        prepTime: 20,
-        difficulty: 'Medium',
-        category: 'Lunch',
-        targetNutrient: 'fiber',
-        reason: `Fiber champion! Provides ${21.9}g fiber for digestive health and satiety.`
-      });
-    }
-
-    // If no specific high needs, suggest balanced meals
-    if (suggestions.length === 0) {
-      suggestions.push({
-        id: 'balanced-meal',
-        name: 'Balanced Nutrition Plate',
-        ingredients: [
-          { ingredient: { id: '1', name: 'Chicken Breast', category: 'Protein', nutritionPer100g: { protein: 31, carbs: 0, fats: 3.6, calories: 165, fiber: 0, vitaminC: 0, vitaminD: 0.1, calcium: 15, iron: 0.7, potassium: 256 }, commonServingSize: 150, unit: 'g' }, amount: 120 },
-          { ingredient: { id: '7', name: 'Sweet Potato', category: 'Carbs', nutritionPer100g: { protein: 2, carbs: 20, fats: 0.1, calories: 86, fiber: 3, vitaminC: 2.4, vitaminD: 0, calcium: 30, iron: 0.6, potassium: 337 }, commonServingSize: 150, unit: 'g' }, amount: 150 },
-          { ingredient: { id: '4', name: 'Broccoli', category: 'Vegetables', nutritionPer100g: { protein: 2.8, carbs: 7, fats: 0.4, calories: 34, fiber: 2.6, vitaminC: 89, vitaminD: 0, calcium: 47, iron: 0.7, potassium: 316 }, commonServingSize: 100, unit: 'g' }, amount: 100 }
-        ],
-        totalNutrition: {
-          protein: 42,
-          carbs: 37,
-          fats: 4.76,
-          calories: 361,
-          fiber: 7.1,
-          vitaminC: 92.6,
-          vitaminD: 0.12,
-          calcium: 95,
-          iron: 1.84,
-          potassium: 871
-        },
-        prepTime: 25,
-        difficulty: 'Easy',
-        category: 'Dinner',
-        targetNutrient: 'balanced',
-        reason: 'Well-balanced meal with quality protein, complex carbs, and essential vitamins.'
-      });
-    }
-
-    return suggestions.slice(0, 3); // Return max 3 suggestions
+    return suggestions.slice(0, 3); // Return max 3 targeted suggestions
   };
 
-  const suggestions = generateIntelligentSuggestions();
+  const suggestions = generateTargetedMealSuggestions();
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -246,10 +296,10 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
       ) : (
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-4 w-4 text-emerald-500" />
-            <span className="text-sm font-medium text-gray-700">AI Recommendations</span>
+            <Calculator className="h-4 w-4 text-emerald-500" />
+            <span className="text-sm font-medium text-gray-700">Precision Meal Planning</span>
             <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-              Based on your needs
+              Calculated portions
             </Badge>
           </div>
           
@@ -271,6 +321,10 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
                         {meal.targetNutrient}
                       </Badge>
                     )}
+                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                      <Calculator className="h-3 w-3 mr-1" />
+                      Calculated
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                     <Clock className="h-4 w-4" />
@@ -293,7 +347,7 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
               </div>
 
               {meal.reason && (
-                <div className="mb-3 p-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="mb-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                   <div className="flex items-start gap-2">
                     <Zap className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-emerald-700 font-medium">{meal.reason}</p>
@@ -303,13 +357,13 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
 
               <div className="text-sm space-y-3">
                 <div>
-                  <div className="font-medium text-gray-700 mb-1">Ingredients:</div>
-                  <div className="text-gray-600 text-xs">
+                  <div className="font-medium text-gray-700 mb-2">Precise Portions:</div>
+                  <div className="space-y-1">
                     {meal.ingredients.map((item, index) => (
-                      <span key={index}>
-                        {item.ingredient.name} ({item.amount}g)
-                        {index < meal.ingredients.length - 1 ? ', ' : ''}
-                      </span>
+                      <div key={index} className="flex justify-between items-center text-xs bg-gray-50 rounded px-2 py-1">
+                        <span className="text-gray-700">{item.ingredient.name}</span>
+                        <span className="font-medium text-gray-900">{item.amount}g</span>
+                      </div>
                     ))}
                   </div>
                 </div>
