@@ -25,8 +25,14 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({ onAddIngredient }) 
   });
 
   const handleAddIngredient = (ingredient: Ingredient) => {
-    console.log('Adding ingredient:', ingredient.name);
-    onAddIngredient(ingredient, ingredient.commonServingSize);
+    console.log('IngredientSearch: Adding ingredient:', ingredient.name);
+    console.log('IngredientSearch: onAddIngredient function:', typeof onAddIngredient);
+    
+    if (typeof onAddIngredient === 'function') {
+      onAddIngredient(ingredient, ingredient.commonServingSize);
+    } else {
+      console.error('onAddIngredient is not a function:', onAddIngredient);
+    }
   };
 
   return (
@@ -75,7 +81,12 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({ onAddIngredient }) 
               </div>
               <Button
                 size="sm"
-                onClick={() => handleAddIngredient(ingredient)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Button clicked for ingredient:', ingredient.name);
+                  handleAddIngredient(ingredient);
+                }}
                 className="gradient-primary hover:shadow-lg text-white"
               >
                 <Plus className="h-4 w-4" />
