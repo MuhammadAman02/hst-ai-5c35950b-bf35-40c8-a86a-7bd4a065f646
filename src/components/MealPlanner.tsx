@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,12 @@ interface MealItem {
   mealData?: MealSuggestion;
 }
 
-const MealPlanner: React.FC<MealPlannerProps> = ({ onNutritionChange, currentNutrition }) => {
+export interface MealPlannerRef {
+  addIngredient: (ingredient: Ingredient, amount: number) => void;
+  addMeal: (meal: MealSuggestion) => void;
+}
+
+const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionChange, currentNutrition }, ref) => {
   const [mealItems, setMealItems] = useState<MealItem[]>([]);
 
   console.log('MealPlanner rendered with items:', mealItems.length);
@@ -128,6 +133,12 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ onNutritionChange, currentNut
     });
   };
 
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    addIngredient,
+    addMeal
+  }));
+
   const totalCalories = mealItems.reduce((total, item) => {
     const nutrition = calculateNutrition(item.ingredient, item.amount);
     return total + nutrition.calories;
@@ -235,20 +246,10 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ onNutritionChange, currentNut
           </div>
         )}
       </CardContent>
-
-      {/* Hidden ref element for parent communication */}
-      <div className="hidden">
-        {React.createElement('div', {
-          ref: (el: any) => {
-            if (el) {
-              el.addIngredient = addIngredient;
-              el.addMeal = addMeal;
-            }
-          }
-        })}
-      </div>
     </Card>
   );
-};
+});
+
+MealPlanner.displayName = 'MealPlanner';
 
 export default MealPlanner;
