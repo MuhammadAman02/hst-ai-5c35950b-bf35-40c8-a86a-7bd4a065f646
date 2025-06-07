@@ -10,5 +10,9 @@
   {
     "role": "user",
     "content": "The deployment failed with the following error from Fly.io:\n\n#10 1.356 error during build:\n#10 1.356 [vite:esbuild] Transform failed with 1 error:\n#10 1.356 /app/src/pages/Index.tsx:86:82: ERROR: Expected \">\" but found \"6\"\n\nPlease fix the issue."
+  },
+  {
+    "role": "user",
+    "content": "The deployment failed with the following error from Fly.io:\n\n#10 1.748 error during build:\n#10 1.748 [vite:esbuild] Transform failed with 1 error:\n#10 1.748 /app/src/pages/Index.tsx:85:82: ERROR: Expected \">\" but found \"6\"\n\nPlease fix the issue."
   }
 ]
