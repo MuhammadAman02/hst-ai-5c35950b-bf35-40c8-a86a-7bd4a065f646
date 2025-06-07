@@ -82,7 +82,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%2310b981\" fill-opacity=\"0.03\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+      <div className="absolute inset-0 bg-gray-50 opacity-40"></div>
       
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -123,19 +123,19 @@ const Index = () => {
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-3 space-y-6">
-              <div className="animate-slide-in" style={{ animationDelay: '0.1s' }}>
+              <div className="animate-slide-in">
                 <NutritionTargetsComponent 
                   targets={nutritionTargets}
                   onTargetsChange={setNutritionTargets}
                 />
               </div>
-              <div className="animate-slide-in" style={{ animationDelay: '0.2s' }}>
+              <div className="animate-slide-in">
                 <NutritionCard progress={dailyProgress} />
               </div>
             </div>
 
             <div className="xl:col-span-4 space-y-6">
-              <div className="animate-scale-in" style={{ animationDelay: '0.3s' }}>
+              <div className="animate-scale-in">
                 <div ref={(el) => {
                   if (el && el.children[0]) {
                     setMealPlannerRef(el.children[0]);
@@ -150,11 +150,11 @@ const Index = () => {
             </div>
 
             <div className="xl:col-span-5 space-y-6">
-              <div className="animate-slide-in" style={{ animationDelay: '0.4s' }}>
+              <div className="animate-slide-in">
                 <AIChat progress={dailyProgress} />
               </div>
               
-              <div className="animate-slide-in" style={{ animationDelay: '0.5s' }}>
+              <div className="animate-slide-in">
                 <Tabs defaultValue="search" className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-white/50 backdrop-blur-sm border border-white/20 rounded-2xl p-1">
                     <TabsTrigger 
@@ -188,7 +188,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="text-center mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="text-center mt-16 animate-fade-in">
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 backdrop-blur-sm rounded-full border border-white/20 shadow-lg">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
               <span className="text-sm text-gray-600 font-medium">
