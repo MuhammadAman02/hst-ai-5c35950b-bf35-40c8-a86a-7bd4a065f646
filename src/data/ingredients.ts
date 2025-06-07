@@ -28,7 +28,7 @@ export const ingredients: Ingredient[] = [
       protein: 2.6,
       carbs: 23,
       fats: 0.9,
-      calories: 112,
+      calories: 111,
       fiber: 1.8,
       vitaminC: 0,
       vitaminD: 0,
@@ -93,7 +93,7 @@ export const ingredients: Ingredient[] = [
       iron: 0.6,
       potassium: 485
     },
-    commonServingSize: 150,
+    commonServingSize: 100,
     unit: 'g'
   },
   {
@@ -174,6 +174,25 @@ export const ingredients: Ingredient[] = [
   },
   {
     id: '10',
+    name: 'Quinoa',
+    category: 'Carbs',
+    nutritionPer100g: {
+      protein: 4.4,
+      carbs: 22,
+      fats: 1.9,
+      calories: 120,
+      fiber: 2.8,
+      vitaminC: 0,
+      vitaminD: 0,
+      calcium: 17,
+      iron: 1.5,
+      potassium: 172
+    },
+    commonServingSize: 100,
+    unit: 'g'
+  },
+  {
+    id: '11',
     name: 'Eggs',
     category: 'Protein',
     nutritionPer100g: {
@@ -190,5 +209,24 @@ export const ingredients: Ingredient[] = [
     },
     commonServingSize: 60,
     unit: 'g'
+  },
+  {
+    id: '12',
+    name: 'Olive Oil',
+    category: 'Fats',
+    nutritionPer100g: {
+      protein: 0,
+      carbs: 0,
+      fats: 100,
+      calories: 884,
+      fiber: 0,
+      vitaminC: 0,
+      vitaminD: 0,
+      calcium: 1,
+      iron: 0.6,
+      potassium: 1
+    },
+    commonServingSize: 15,
+    unit: 'ml'
   }
 ];
