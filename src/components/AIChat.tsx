@@ -141,16 +141,13 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
 
   return (
     <Card className="glass-card h-[400px] flex flex-col">
-      <CardHeader className="pb-3 border-b border-gray-100">
+      <CardHeader className="flex-shrink-0 p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-3">
-            <div className="relative">
-              <div className="w-8 h-8 gradient-secondary rounded-lg flex items-center justify-center">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center space-x-3">
+            <div className="w-8 h-8 gradient-secondary rounded-lg flex items-center justify-center">
+              <Bot className="h-4 w-4 text-white" />
             </div>
-            AI Assistant
+            <span>AI Assistant</span>
           </CardTitle>
           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
             Online
@@ -158,22 +155,22 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-4 space-y-4">
+      <CardContent className="flex-1 flex flex-col p-4 space-y-4 min-h-0">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-2">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] rounded-2xl px-3 py-2 ${
                   message.type === 'user'
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white'
                     : 'bg-white border border-gray-200 text-gray-800 shadow-sm'
                 }`}
               >
-                <div className="flex items-start gap-2">
+                <div className="flex items-start space-x-2">
                   {message.type === 'ai' && (
                     <Bot className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
                   )}
@@ -189,9 +186,9 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
           ))}
           
           {isLoading && (
-            <div className="flex justify-start animate-fade-in">
-              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
-                <div className="flex items-center gap-2">
+            <div className="flex justify-start">
+              <div className="bg-white border border-gray-200 rounded-2xl px-3 py-2 shadow-sm">
+                <div className="flex items-center space-x-2">
                   <Bot className="h-4 w-4 text-blue-600" />
                   <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   <span className="text-sm text-gray-600">Thinking...</span>
@@ -210,7 +207,7 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
               variant="outline"
               size="sm"
               onClick={() => setInputValue(question)}
-              className="text-xs bg-gray-50 border-gray-200 hover:bg-gray-100 transition-all duration-200"
+              className="text-xs bg-gray-50 border-gray-200 hover:bg-gray-100"
             >
               {question}
             </Button>
@@ -218,12 +215,12 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
         </div>
 
         {/* Input */}
-        <div className="flex gap-2">
+        <div className="flex space-x-2">
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask me about nutrition, meals, or recipes..."
+            placeholder="Ask me about nutrition..."
             className="flex-1 rounded-xl border-gray-200 focus-ring"
             disabled={isLoading}
           />
