@@ -83,7 +83,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2310b981" fill-opacity="0.03"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%2310b981\" fill-opacity=\"0.03\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
       
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -91,7 +91,7 @@ const Index = () => {
           <div className="text-center mb-12 animate-fade-in">
             <div className="inline-flex items-center gap-3 mb-6">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-neo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/25 animate-glow">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/25 animate-glow">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
@@ -100,7 +100,7 @@ const Index = () => {
               </div>
             </div>
             
-            <h1 className="text-6xl font-black mb-4 bg-gradient-to-r from-emerald-600 via-neo-600 to-violet-600 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-6xl font-black mb-4 bg-gradient-to-r from-emerald-600 via-emerald-600 to-violet-600 bg-clip-text text-transparent leading-tight">
               NutriAI
             </h1>
             <p className="text-xl text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -113,7 +113,7 @@ const Index = () => {
                 AI-Powered Suggestions
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-neo-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                 Real-time Tracking
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
