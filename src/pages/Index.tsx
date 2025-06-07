@@ -81,43 +81,43 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
+      {/* Modern Header */}
+      <header className="bg-white/95 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                   NutriAI
                 </h1>
-                <p className="text-sm text-gray-500">Smart nutrition planning</p>
+                <p className="text-sm text-gray-500 font-medium">Smart nutrition planning</p>
               </div>
             </div>
             
-            <div className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                <span>AI-Powered</span>
+            <div className="hidden md:flex items-center space-x-8">
+              <div className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-50 rounded-full">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-emerald-700">AI-Powered</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span>Real-time Tracking</span>
+              <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-blue-700">Real-time Tracking</span>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Main Content with proper spacing */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-12 gap-8">
           
           {/* Left Sidebar - Targets & Progress */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="col-span-12 lg:col-span-3 space-y-6">
             <NutritionTargetsComponent 
               targets={nutritionTargets}
               onTargetsChange={setNutritionTargets}
@@ -126,7 +126,7 @@ const Index = () => {
           </div>
 
           {/* Center - Meal Planner */}
-          <div className="lg:col-span-2">
+          <div className="col-span-12 lg:col-span-6">
             <div ref={(el) => {
               if (el && el.children[0]) {
                 setMealPlannerRef(el.children[0]);
@@ -140,38 +140,42 @@ const Index = () => {
           </div>
 
           {/* Right Sidebar - AI Chat & Tools */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="col-span-12 lg:col-span-3 space-y-6">
             <AIChat progress={dailyProgress} />
             
-            <Tabs defaultValue="search" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200 rounded-lg p-1">
-                <TabsTrigger 
-                  value="search" 
-                  className="flex items-center space-x-2 rounded-md data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
-                >
-                  <Search className="h-4 w-4" />
-                  <span className="hidden sm:inline">Search</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="suggestions" 
-                  className="flex items-center space-x-2 rounded-md data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
-                >
-                  <ChefHat className="h-4 w-4" />
-                  <span className="hidden sm:inline">Meals</span>
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="search" className="mt-4">
-                <IngredientSearch onAddIngredient={handleAddIngredient} />
-              </TabsContent>
-              
-              <TabsContent value="suggestions" className="mt-4">
-                <MealSuggestions 
-                  progress={dailyProgress}
-                  onAddMeal={handleAddMeal}
-                />
-              </TabsContent>
-            </Tabs>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200/50 overflow-hidden">
+              <Tabs defaultValue="search" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-1 m-4 rounded-xl">
+                  <TabsTrigger 
+                    value="search" 
+                    className="flex items-center space-x-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span>Search</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="suggestions" 
+                    className="flex items-center space-x-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  >
+                    <ChefHat className="h-4 w-4" />
+                    <span>Meals</span>
+                  </TabsTrigger>
+                </TabsList>
+                
+                <div className="p-4 pt-0">
+                  <TabsContent value="search" className="mt-0">
+                    <IngredientSearch onAddIngredient={handleAddIngredient} />
+                  </TabsContent>
+                  
+                  <TabsContent value="suggestions" className="mt-0">
+                    <MealSuggestions 
+                      progress={dailyProgress}
+                      onAddMeal={handleAddMeal}
+                    />
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
           </div>
         </div>
       </main>
