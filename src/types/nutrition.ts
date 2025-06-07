@@ -1,16 +1,3 @@
-export interface NutritionTargets {
-  protein: number;
-  carbs: number;
-  fats: number;
-  calories: number;
-  fiber: number;
-  vitaminC: number;
-  vitaminD: number;
-  calcium: number;
-  iron: number;
-  potassium: number;
-}
-
 export interface NutritionInfo {
   protein: number;
   carbs: number;
@@ -24,22 +11,26 @@ export interface NutritionInfo {
   potassium: number;
 }
 
+export interface NutritionTargets extends NutritionInfo {}
+
 export interface Ingredient {
   id: string;
   name: string;
-  category: string;
+  category: 'Protein' | 'Carbs' | 'Vegetables' | 'Fats';
   nutritionPer100g: NutritionInfo;
   commonServingSize: number;
   unit: string;
 }
 
+export interface MealIngredient {
+  ingredient: Ingredient;
+  amount: number;
+}
+
 export interface MealSuggestion {
   id: string;
   name: string;
-  ingredients: Array<{
-    ingredient: Ingredient;
-    amount: number;
-  }>;
+  ingredients: MealIngredient[];
   totalNutrition: NutritionInfo;
   prepTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
