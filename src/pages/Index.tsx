@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Target, Search, ChefHat, Bot, Sparkles, TrendingUp } from 'lucide-react';
+import { Calculator, Target, Search, ChefHat, Bot, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import NutritionTargetsComponent from '../components/NutritionTargets';
 import NutritionCard from '../components/NutritionCard';
 import IngredientSearch from '../components/IngredientSearch';
@@ -81,119 +81,108 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gray-50 opacity-40"></div>
-      
-      <div className="relative z-10">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="text-center mb-12 animate-fade-in">
-            <div className="inline-flex items-center gap-3 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/20">
+      {/* Header */}
+      <div className="border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/25 animate-glow">
-                  <Sparkles className="w-8 h-8 text-white" />
+                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
-                  <Bot className="w-3 h-3 text-white" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Bot className="w-2 h-2 text-white" />
                 </div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gradient">NutriAI</h1>
+                <p className="text-sm text-gray-500">Smart nutrition planning</p>
               </div>
             </div>
             
-            <h1 className="text-6xl font-black mb-4 bg-gradient-to-r from-emerald-600 via-emerald-600 to-violet-600 bg-clip-text text-transparent leading-tight">
-              NutriAI
-            </h1>
-            <p className="text-xl text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
-              Your AI-powered nutrition companion for personalized meal planning and dietary optimization
-            </p>
-            
-            <div className="flex items-center justify-center gap-6 mt-8">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                AI-Powered Suggestions
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                Real-time Tracking
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse"></div>
-                Smart Recommendations
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>AI-Powered</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>Real-time Tracking</span>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div className="xl:col-span-3 space-y-6">
-              <div className="animate-slide-in">
-                <NutritionTargetsComponent 
-                  targets={nutritionTargets}
-                  onTargetsChange={setNutritionTargets}
-                />
-              </div>
-              <div className="animate-slide-in">
-                <NutritionCard progress={dailyProgress} />
-              </div>
+      {/* Main Content */}
+      <div className="container mx-auto px-6 py-8 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Sidebar - Targets & Progress */}
+          <div className="lg:col-span-3 space-y-6">
+            <div className="animate-fade-in">
+              <NutritionTargetsComponent 
+                targets={nutritionTargets}
+                onTargetsChange={setNutritionTargets}
+              />
             </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <NutritionCard progress={dailyProgress} />
+            </div>
+          </div>
 
-            <div className="xl:col-span-4 space-y-6">
-              <div className="animate-scale-in">
-                <div ref={(el) => {
-                  if (el && el.children[0]) {
-                    setMealPlannerRef(el.children[0]);
-                  }
-                }}>
-                  <MealPlanner 
-                    onNutritionChange={handleNutritionChange}
-                    currentNutrition={currentNutrition}
+          {/* Center - Meal Planner */}
+          <div className="lg:col-span-5 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div ref={(el) => {
+              if (el && el.children[0]) {
+                setMealPlannerRef(el.children[0]);
+              }
+            }}>
+              <MealPlanner 
+                onNutritionChange={handleNutritionChange}
+                currentNutrition={currentNutrition}
+              />
+            </div>
+          </div>
+
+          {/* Right Sidebar - AI Chat & Tools */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <AIChat progress={dailyProgress} />
+            </div>
+            
+            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <Tabs defaultValue="search" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-1 shadow-sm">
+                  <TabsTrigger 
+                    value="search" 
+                    className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span className="hidden sm:inline">Search</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="suggestions" 
+                    className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+                  >
+                    <ChefHat className="h-4 w-4" />
+                    <span className="hidden sm:inline">Suggestions</span>
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="search" className="mt-4">
+                  <IngredientSearch onAddIngredient={handleAddIngredient} />
+                </TabsContent>
+                
+                <TabsContent value="suggestions" className="mt-4">
+                  <MealSuggestions 
+                    progress={dailyProgress}
+                    onAddMeal={handleAddMeal}
                   />
-                </div>
-              </div>
-            </div>
-
-            <div className="xl:col-span-5 space-y-6">
-              <div className="animate-slide-in">
-                <AIChat progress={dailyProgress} />
-              </div>
-              
-              <div className="animate-slide-in">
-                <Tabs defaultValue="search" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-white/50 backdrop-blur-sm border border-white/20 rounded-2xl p-1">
-                    <TabsTrigger 
-                      value="search" 
-                      className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200"
-                    >
-                      <Search className="h-4 w-4" />
-                      <span className="hidden sm:inline">Search</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="suggestions" 
-                      className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200"
-                    >
-                      <ChefHat className="h-4 w-4" />
-                      <span className="hidden sm:inline">Suggestions</span>
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="search" className="mt-6">
-                    <IngredientSearch onAddIngredient={handleAddIngredient} />
-                  </TabsContent>
-                  
-                  <TabsContent value="suggestions" className="mt-6">
-                    <MealSuggestions 
-                      progress={dailyProgress}
-                      onAddMeal={handleAddMeal}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center mt-16 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 backdrop-blur-sm rounded-full border border-white/20 shadow-lg">
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
-              <span className="text-sm text-gray-600 font-medium">
-                Powered by advanced AI for optimal nutrition planning
-              </span>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
