@@ -2,5 +2,9 @@
   {
     "role": "user",
     "content": "The deployment failed with the following error from Fly.io:\n\nError: failed to update machine 6e822064b726d8: failed to update VM 6e822064b726d8: Your organization has reached its machine limit. Please contact billing@fly.io (Request ID: 01JX68QHWJ6RXKBBAKAR0N84X0-sin) (Trace ID: ae1bbd63fa4d904505551e9dd7728aca)\n\nPlease fix the issue."
+  },
+  {
+    "role": "user",
+    "content": "The deployment failed with the following error from Fly.io:\n\n#10 2.045 error during build:\n#10 2.045 [vite:esbuild] Transform failed with 1 error:\n#10 2.045 /app/src/pages/Index.tsx:86:81: ERROR: Expected \">\" but found \"6\"\n\nPlease fix the issue."
   }
 ]
