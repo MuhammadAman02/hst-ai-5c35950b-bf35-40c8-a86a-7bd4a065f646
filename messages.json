@@ -1,0 +1,6 @@
+[
+  {
+    "role": "user",
+    "content": "The deployment failed with the following error from Fly.io:\n\nError: failed to update machine 6e822064b726d8: failed to update VM 6e822064b726d8: Your organization has reached its machine limit. Please contact billing@fly.io (Request ID: 01JX68QHWJ6RXKBBAKAR0N84X0-sin) (Trace ID: ae1bbd63fa4d904505551e9dd7728aca)\n\nPlease fix the issue."
+  }
+]
