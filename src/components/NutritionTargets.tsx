@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Target } from 'lucide-react';
+import { Target, Zap, TrendingUp, Activity } from 'lucide-react';
 import { NutritionTargets } from '../types/nutrition';
 
 interface NutritionTargetsProps {
@@ -78,156 +78,137 @@ const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
   };
 
   return (
-    <Card className="w-full animate-fade-in">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-health-green">
-          <Target className="h-5 w-5" />
-          Daily Nutrition Targets
+    <Card className="glass-card hover-lift">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-3">
+          <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+            <Target className="h-4 w-4 text-white" />
+          </div>
+          Daily Targets
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-2">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setPreset('weight-loss')}
-            className="text-xs"
+            className="text-xs hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition-all duration-200"
           >
+            <TrendingUp className="h-3 w-3 mr-1" />
             Weight Loss
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setPreset('muscle-gain')}
-            className="text-xs"
+            className="text-xs hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all duration-200"
           >
+            <Zap className="h-3 w-3 mr-1" />
             Muscle Gain
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setPreset('maintenance')}
-            className="text-xs"
+            className="text-xs hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all duration-200"
           >
+            <Activity className="h-3 w-3 mr-1" />
             Maintenance
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="protein" className="text-health-protein font-medium">
-              Protein (g)
-            </Label>
-            <Input
-              id="protein"
-              type="number"
-              value={targets.protein}
-              onChange={(e) => handleInputChange('protein', e.target.value)}
-              className="border-health-protein/20 focus:border-health-protein"
-            />
+        <div className="space-y-4">
+          {/* Macronutrients */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">Macronutrients</h4>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="protein" className="text-sm font-medium text-emerald-600">
+                  Protein (g)
+                </Label>
+                <Input
+                  id="protein"
+                  type="number"
+                  value={targets.protein}
+                  onChange={(e) => handleInputChange('protein', e.target.value)}
+                  className="focus-ring border-emerald-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="carbs" className="text-sm font-medium text-blue-600">
+                  Carbs (g)
+                </Label>
+                <Input
+                  id="carbs"
+                  type="number"
+                  value={targets.carbs}
+                  onChange={(e) => handleInputChange('carbs', e.target.value)}
+                  className="focus-ring border-blue-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fats" className="text-sm font-medium text-purple-600">
+                  Fats (g)
+                </Label>
+                <Input
+                  id="fats"
+                  type="number"
+                  value={targets.fats}
+                  onChange={(e) => handleInputChange('fats', e.target.value)}
+                  className="focus-ring border-purple-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="calories" className="text-sm font-medium text-gray-600">
+                  Calories
+                </Label>
+                <Input
+                  id="calories"
+                  type="number"
+                  value={targets.calories}
+                  onChange={(e) => handleInputChange('calories', e.target.value)}
+                  className="focus-ring border-gray-200"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="carbs" className="text-health-carbs font-medium">
-              Carbohydrates (g)
-            </Label>
-            <Input
-              id="carbs"
-              type="number"
-              value={targets.carbs}
-              onChange={(e) => handleInputChange('carbs', e.target.value)}
-              className="border-health-carbs/20 focus:border-health-carbs"
-            />
-          </div>
+          {/* Micronutrients */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">Key Nutrients</h4>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="fiber" className="text-sm font-medium text-green-600">
+                  Fiber (g)
+                </Label>
+                <Input
+                  id="fiber"
+                  type="number"
+                  value={targets.fiber}
+                  onChange={(e) => handleInputChange('fiber', e.target.value)}
+                  className="focus-ring border-green-200"
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fats" className="text-health-fats font-medium">
-              Fats (g)
-            </Label>
-            <Input
-              id="fats"
-              type="number"
-              value={targets.fats}
-              onChange={(e) => handleInputChange('fats', e.target.value)}
-              className="border-health-fats/20 focus:border-health-fats"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="calories" className="text-gray-700 font-medium">
-              Calories
-            </Label>
-            <Input
-              id="calories"
-              type="number"
-              value={targets.calories}
-              onChange={(e) => handleInputChange('calories', e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="fiber" className="text-health-vitamins font-medium">
-              Fiber (g)
-            </Label>
-            <Input
-              id="fiber"
-              type="number"
-              value={targets.fiber}
-              onChange={(e) => handleInputChange('fiber', e.target.value)}
-              className="border-health-vitamins/20 focus:border-health-vitamins"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="vitaminC" className="text-health-vitamins font-medium">
-              Vitamin C (mg)
-            </Label>
-            <Input
-              id="vitaminC"
-              type="number"
-              value={targets.vitaminC}
-              onChange={(e) => handleInputChange('vitaminC', e.target.value)}
-              className="border-health-vitamins/20 focus:border-health-vitamins"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="vitaminD" className="text-health-vitamins font-medium">
-              Vitamin D (μg)
-            </Label>
-            <Input
-              id="vitaminD"
-              type="number"
-              value={targets.vitaminD}
-              onChange={(e) => handleInputChange('vitaminD', e.target.value)}
-              className="border-health-vitamins/20 focus:border-health-vitamins"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="calcium" className="text-health-vitamins font-medium">
-              Calcium (mg)
-            </Label>
-            <Input
-              id="calcium"
-              type="number"
-              value={targets.calcium}
-              onChange={(e) => handleInputChange('calcium', e.target.value)}
-              className="border-health-vitamins/20 focus:border-health-vitamins"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="iron" className="text-health-vitamins font-medium">
-              Iron (mg)
-            </Label>
-            <Input
-              id="iron"
-              type="number"
-              value={targets.iron}
-              onChange={(e) => handleInputChange('iron', e.target.value)}
-              className="border-health-vitamins/20 focus:border-health-vitamins"
-            />
+              <div className="space-y-2">
+                <Label htmlFor="vitaminC" className="text-sm font-medium text-orange-600">
+                  Vitamin C (mg)
+                </Label>
+                <Input
+                  id="vitaminC"
+                  type="number"
+                  value={targets.vitaminC}
+                  onChange={(e) => handleInputChange('vitaminC', e.target.value)}
+                  className="focus-ring border-orange-200"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
