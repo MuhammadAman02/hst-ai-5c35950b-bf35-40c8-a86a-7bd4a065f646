@@ -25,8 +25,8 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#10b981',
-					foreground: '#ffffff'
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -62,15 +62,15 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				health: {
-					green: '#10b981',
-					'green-dark': '#059669',
-					'green-light': '#d1fae5',
-					protein: '#ef4444',
-					carbs: '#f59e0b',
-					fats: '#8b5cf6',
-					vitamins: '#06b6d4'
-				}
+				'health-green': {
+					DEFAULT: '#10b981',
+					light: '#d1fae5',
+					dark: '#059669'
+				},
+				'health-protein': '#ef4444',
+				'health-carbs': '#f59e0b',
+				'health-fats': '#8b5cf6',
+				'health-vitamins': '#06b6d4'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
