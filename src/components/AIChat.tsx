@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Sparkles, User, Loader2 } from 'lucide-react';
+import { Bot, Send, Sparkles, User, Loader2, MessageCircle } from 'lucide-react';
 import { NutritionInfo, DailyProgress } from '../types/nutrition';
 
 interface Message {
@@ -40,14 +40,11 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
   }, [messages]);
 
   const generateAIResponse = async (userMessage: string): Promise<string> => {
-    // Simulate AI processing delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
 
     const remaining = progress.remaining;
     const current = progress.current;
     const targets = progress.targets;
-
-    // Simple AI logic based on nutrition data
     const lowerMessage = userMessage.toLowerCase();
 
     if (lowerMessage.includes('protein') || lowerMessage.includes('muscle')) {
@@ -66,23 +63,6 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
       }
     }
 
-    if (lowerMessage.includes('fat') || lowerMessage.includes('healthy')) {
-      if (remaining.fats > 15) {
-        return `You need ${remaining.fats.toFixed(1)}g more healthy fats. Try avocados (15g per 100g), nuts like almonds (50g per 100g), or olive oil. These support hormone production and nutrient absorption.`;
-      } else {
-        return `Your fat intake is on track! You've consumed ${current.fats.toFixed(1)}g out of ${targets.fats}g. Good balance of healthy fats!`;
-      }
-    }
-
-    if (lowerMessage.includes('vitamin') || lowerMessage.includes('micronutrient')) {
-      const vitaminCNeeded = remaining.vitaminC;
-      if (vitaminCNeeded > 20) {
-        return `You need ${vitaminCNeeded.toFixed(1)}mg more Vitamin C. Citrus fruits, bell peppers, broccoli, and strawberries are excellent sources. Vitamin C supports immune function and iron absorption.`;
-      } else {
-        return `Your vitamin intake looks good! Remember that a varied diet with colorful fruits and vegetables ensures you get all essential micronutrients.`;
-      }
-    }
-
     if (lowerMessage.includes('meal') || lowerMessage.includes('recipe') || lowerMessage.includes('cook')) {
       const suggestions = [];
       if (remaining.protein > 20) suggestions.push('high-protein meal');
@@ -96,18 +76,6 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
       }
     }
 
-    if (lowerMessage.includes('weight') || lowerMessage.includes('lose') || lowerMessage.includes('gain')) {
-      const caloriesRemaining = remaining.calories;
-      if (caloriesRemaining > 300) {
-        return `You have ${caloriesRemaining.toFixed(0)} calories remaining today. For healthy weight management, spread these across balanced meals with adequate protein to maintain muscle mass.`;
-      } else if (caloriesRemaining < 100) {
-        return `You're close to your calorie target with ${caloriesRemaining.toFixed(0)} calories left. Consider a light, nutrient-dense snack if you're still hungry.`;
-      } else {
-        return `You have ${caloriesRemaining.toFixed(0)} calories remaining. Perfect for a balanced meal or healthy snack!`;
-      }
-    }
-
-    // Default responses
     const defaultResponses = [
       `Based on your current nutrition intake, you're doing well! You've consumed ${current.calories.toFixed(0)} out of ${targets.calories} calories today.`,
       `I can help you with meal planning, recipe suggestions, or nutrition questions. What specific area would you like to focus on?`,
@@ -172,18 +140,22 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
   ];
 
   return (
-    <Card className="neo-card h-[600px] flex flex-col animate-fade-in">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 gradient-text">
-          <div className="relative">
-            <Bot className="h-5 w-5" />
-            <Sparkles className="h-3 w-3 absolute -top-1 -right-1 text-violet-500 animate-pulse" />
-          </div>
-          AI Nutrition Assistant
-        </CardTitle>
-        <Badge variant="outline" className="w-fit text-xs bg-gradient-to-r from-emerald-50 to-neo-50 border-emerald-200">
-          Powered by Advanced AI
-        </Badge>
+    <Card className="glass-card h-[400px] flex flex-col">
+      <CardHeader className="pb-3 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-3">
+            <div className="relative">
+              <div className="w-8 h-8 gradient-secondary rounded-lg flex items-center justify-center">
+                <Bot className="h-4 w-4 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+            </div>
+            AI Assistant
+          </CardTitle>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+            Online
+          </Badge>
+        </div>
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-4 space-y-4">
@@ -192,21 +164,18 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-slide-in`}
+              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                   message.type === 'user'
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white'
-                    : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200'
+                    : 'bg-white border border-gray-200 text-gray-800 shadow-sm'
                 }`}
               >
                 <div className="flex items-start gap-2">
                   {message.type === 'ai' && (
-                    <Bot className="h-4 w-4 mt-0.5 text-emerald-600 flex-shrink-0" />
-                  )}
-                  {message.type === 'user' && (
-                    <User className="h-4 w-4 mt-0.5 text-white flex-shrink-0" />
+                    <Bot className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
                   )}
                   <div className="text-sm leading-relaxed">{message.content}</div>
                 </div>
@@ -220,11 +189,11 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
           ))}
           
           {isLoading && (
-            <div className="flex justify-start animate-slide-in">
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl px-4 py-3 border border-gray-200">
+            <div className="flex justify-start animate-fade-in">
+              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
                 <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-emerald-600" />
-                  <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                  <Bot className="h-4 w-4 text-blue-600" />
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   <span className="text-sm text-gray-600">Thinking...</span>
                 </div>
               </div>
@@ -241,7 +210,7 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
               variant="outline"
               size="sm"
               onClick={() => setInputValue(question)}
-              className="text-xs bg-gradient-to-r from-emerald-50 to-neo-50 border-emerald-200 hover:from-emerald-100 hover:to-neo-100 transition-all duration-200"
+              className="text-xs bg-gray-50 border-gray-200 hover:bg-gray-100 transition-all duration-200"
             >
               {question}
             </Button>
@@ -255,13 +224,13 @@ const AIChat: React.FC<AIChatProps> = ({ progress, onSuggestion }) => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask me about nutrition, meals, or recipes..."
-            className="flex-1 rounded-xl border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+            className="flex-1 rounded-xl border-gray-200 focus-ring"
             disabled={isLoading}
           />
           <Button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200"
+            className="rounded-xl gradient-primary hover:shadow-lg transition-all duration-200"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
