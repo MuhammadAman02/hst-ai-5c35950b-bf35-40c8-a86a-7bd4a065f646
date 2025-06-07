@@ -16,7 +16,7 @@ export interface NutritionTargets extends NutritionInfo {}
 export interface Ingredient {
   id: string;
   name: string;
-  category: 'Protein' | 'Carbs' | 'Vegetables' | 'Fats';
+  category: string;
   nutritionPer100g: NutritionInfo;
   commonServingSize: number;
   unit: string;
@@ -35,6 +35,8 @@ export interface MealSuggestion {
   prepTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
+  targetNutrient?: 'protein' | 'carbs' | 'fats' | 'fiber' | 'vitaminC' | 'vitaminD' | 'calcium' | 'iron' | 'potassium' | 'balanced';
+  reason?: string;
 }
 
 export interface DailyProgress {
