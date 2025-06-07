@@ -82,12 +82,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
-      {/* Background Elements */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%2310b981\" fill-opacity=\"0.03\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
       
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-          {/* Modern Header */}
           <div className="text-center mb-12 animate-fade-in">
             <div className="inline-flex items-center gap-3 mb-6">
               <div className="relative">
@@ -123,9 +121,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            {/* Left Sidebar - Targets and Progress */}
             <div className="xl:col-span-3 space-y-6">
               <div className="animate-slide-in" style={{ animationDelay: '0.1s' }}>
                 <NutritionTargetsComponent 
@@ -138,7 +134,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Center - Meal Planner */}
             <div className="xl:col-span-4 space-y-6">
               <div className="animate-scale-in" style={{ animationDelay: '0.3s' }}>
                 <div ref={(el) => {
@@ -154,7 +149,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right Sidebar - AI Chat and Tools */}
             <div className="xl:col-span-5 space-y-6">
               <div className="animate-slide-in" style={{ animationDelay: '0.4s' }}>
                 <AIChat progress={dailyProgress} />
@@ -194,7 +188,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Modern Footer */}
           <div className="text-center mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 backdrop-blur-sm rounded-full border border-white/20 shadow-lg">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
