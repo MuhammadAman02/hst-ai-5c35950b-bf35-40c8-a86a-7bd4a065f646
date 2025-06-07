@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Utensils } from 'lucide-react';
+import { Trash2, Utensils, Plus, Sparkles } from 'lucide-react';
 import { Ingredient, NutritionInfo, MealSuggestion } from '../types/nutrition';
 
 interface MealPlannerProps {
@@ -128,7 +128,6 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ onNutritionChange, currentNut
     });
   };
 
-  // Group items by meal if they're from the same meal
   const groupedItems = mealItems.reduce((groups, item) => {
     if (item.type === 'meal' && item.mealData) {
       const mealName = item.mealData.name;
@@ -145,83 +144,140 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ onNutritionChange, currentNut
     return groups;
   }, {} as Record<string, MealItem[]>);
 
+  const totalCalories = mealItems.reduce((total, item) => {
+    const nutrition = calculateNutrition(item.ingredient, item.amount);
+    return total + nutrition.calories;
+  }, 0);
+
   return (
-    <div className="space-y-4">
-      <Card className="w-full animate-fade-in">
-        <CardHeader>
+    <div className="space-y-6">
+      <Card className="neo-card animate-fade-in overflow-hidden">
+        <CardHeader className="pb-4">
           <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2 text-health-green">
+            <CardTitle className="gradient-text flex items-center gap-2">
               <Utensils className="h-5 w-5" />
               Today's Meal Plan
             </CardTitle>
-            {mealItems.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearAll}
-                className="text-red-600 hover:text-red-700"
-              >
-                Clear All
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {mealItems.length > 0 && (
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                  {totalCalories.toFixed(0)} cal
+                </Badge>
+              )}
+              {mealItems.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={clearAll}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                >
+                  Clear All
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
+        
         <CardContent>
           {mealItems.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Utensils className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>Your meal plan is empty</p>
-              <p className="text-sm">Add ingredients or meals to start planning your nutrition</p>
+            <div className="text-center py-12 animate-fade-in">
+              <div className="relative mb-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-neo-100 rounded-3xl flex items-center justify-center mx-auto">
+                  <Utensils className="h-10 w-10 text-emerald-600" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
+                  <Plus className="h-4 w-4 text-white" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Start Building Your Meal Plan</h3>
+              <p className="text-gray-600 mb-4">Add ingredients or complete meals to track your nutrition</p>
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <Sparkles className="h-4 w-4 text-emerald-500" />
+                <span>AI suggestions will appear as you add items</span>
+              </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {Object.entries(groupedItems).map(([groupName, items]) => (
-                <div key={groupName} className="space-y-2">
+            <div className="space-y-6">
+              {Object.entries(groupedItems).map(([groupName, items], groupIndex) => (
+                <div 
+                  key={groupName} 
+                  className="animate-slide-in"
+                  style={{ animationDelay: `${groupIndex * 0.1}s` }}
+                >
                   {groupName !== 'Individual Items' && (
-                    <h4 className="font-semibold text-health-green border-b pb-1">
-                      {groupName}
-                    </h4>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                        <Utensils className="h-4 w-4 text-white" />
+                      </div>
+                      <h4 className="text-lg font-semibold gradient-text">
+                        {groupName}
+                      </h4>
+                    </div>
                   )}
                   {groupName === 'Individual Items' && items.length > 0 && (
-                    <h4 className="font-semibold text-gray-700 border-b pb-1">
-                      Individual Items
-                    </h4>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl flex items-center justify-center">
+                        <Plus className="h-4 w-4 text-white" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-700">
+                        Individual Items
+                      </h4>
+                    </div>
                   )}
                   
-                  {items.map(item => {
-                    const nutrition = calculateNutrition(item.ingredient, item.amount);
-                    return (
-                      <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{item.ingredient.name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {item.amount}g
-                            </Badge>
-                            {item.type === 'meal' && (
-                              <Badge className="text-xs bg-health-green text-white">
-                                Meal
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-xs text-gray-600 grid grid-cols-2 md:grid-cols-4 gap-2">
-                            <span>P: {nutrition.protein.toFixed(1)}g</span>
-                            <span>C: {nutrition.carbs.toFixed(1)}g</span>
-                            <span>F: {nutrition.fats.toFixed(1)}g</span>
-                            <span>Cal: {nutrition.calories.toFixed(0)}</span>
+                  <div className="grid gap-3">
+                    {items.map((item, itemIndex) => {
+                      const nutrition = calculateNutrition(item.ingredient, item.amount);
+                      return (
+                        <div 
+                          key={item.id} 
+                          className="group bg-white/60 backdrop-blur-sm border border-white/40 rounded-2xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                          style={{ animationDelay: `${(groupIndex * items.length + itemIndex) * 0.05}s` }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="font-semibold text-gray-900">{item.ingredient.name}</span>
+                                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                                  {item.amount}g
+                                </Badge>
+                                {item.type === 'meal' && (
+                                  <Badge className="text-xs bg-gradient-to-r from-violet-500 to-purple-600 text-white">
+                                    <Sparkles className="h-3 w-3 mr-1" />
+                                    Meal
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                <div className="bg-emerald-50 rounded-lg px-2 py-1">
+                                  <span className="text-emerald-600 font-medium">P:</span> {nutrition.protein.toFixed(1)}g
+                                </div>
+                                <div className="bg-blue-50 rounded-lg px-2 py-1">
+                                  <span className="text-blue-600 font-medium">C:</span> {nutrition.carbs.toFixed(1)}g
+                                </div>
+                                <div className="bg-purple-50 rounded-lg px-2 py-1">
+                                  <span className="text-purple-600 font-medium">F:</span> {nutrition.fats.toFixed(1)}g
+                                </div>
+                                <div className="bg-gray-50 rounded-lg px-2 py-1">
+                                  <span className="text-gray-600 font-medium">Cal:</span> {nutrition.calories.toFixed(0)}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-3"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeItem(item.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -229,9 +285,8 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ onNutritionChange, currentNut
         </CardContent>
       </Card>
 
-      {/* Pass the functions to child components via props */}
+      {/* Hidden ref element for parent communication */}
       <div className="hidden">
-        {/* This is a hack to pass functions to parent component */}
         {React.createElement('div', {
           ref: (el: any) => {
             if (el) {
