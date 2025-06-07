@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import NutritionTargetsComponent from '../components/NutritionTargets';
 import NutritionCard from '../components/NutritionCard';
 import IngredientSearch from '../components/IngredientSearch';
 import MealSuggestions from '../components/MealSuggestions';
-import MealPlanner from '../components/MealPlanner';
+import MealPlanner, { MealPlannerRef } from '../components/MealPlanner';
 import AIChat from '../components/AIChat';
 import { NutritionTargets, NutritionInfo, DailyProgress, Ingredient, MealSuggestion } from '../types/nutrition';
 
@@ -17,6 +17,7 @@ const Index = () => {
 
   const [currentStep, setCurrentStep] = useState<'setup' | 'planning' | 'tracking'>('setup');
   const [hasSetTargets, setHasSetTargets] = useState(false);
+  const mealPlannerRef = useRef<MealPlannerRef>(null);
   
   const [nutritionTargets, setNutritionTargets] = useState<NutritionTargets>({
     protein: 100,
@@ -44,8 +45,6 @@ const Index = () => {
     potassium: 0
   });
 
-  const [mealPlannerRef, setMealPlannerRef] = useState<any>(null);
-
   const calculateRemaining = (): NutritionInfo => {
     return {
       protein: Math.max(0, nutritionTargets.protein - currentNutrition.protein),
@@ -69,15 +68,19 @@ const Index = () => {
 
   const handleAddIngredient = (ingredient: Ingredient, amount: number) => {
     console.log('Handling add ingredient from Index:', ingredient.name);
-    if (mealPlannerRef && mealPlannerRef.addIngredient) {
-      mealPlannerRef.addIngredient(ingredient, amount);
+    if (mealPlannerRef.current) {
+      mealPlannerRef.current.addIngredient(ingredient, amount);
+    } else {
+      console.error('MealPlanner ref is not available');
     }
   };
 
   const handleAddMeal = (meal: MealSuggestion) => {
     console.log('Handling add meal from Index:', meal.name);
-    if (mealPlannerRef && mealPlannerRef.addMeal) {
-      mealPlannerRef.addMeal(meal);
+    if (mealPlannerRef.current) {
+      mealPlannerRef.current.addMeal(meal);
+    } else {
+      console.error('MealPlanner ref is not available');
     }
   };
 
@@ -239,16 +242,11 @@ const Index = () => {
             <div className="grid grid-cols-12 gap-8">
               {/* Main Meal Planner */}
               <div className="col-span-12 lg:col-span-8">
-                <div ref={(el) => {
-                  if (el && el.children[0]) {
-                    setMealPlannerRef(el.children[0]);
-                  }
-                }}>
-                  <MealPlanner 
-                    onNutritionChange={handleNutritionChange}
-                    currentNutrition={currentNutrition}
-                  />
-                </div>
+                <MealPlanner 
+                  ref={mealPlannerRef}
+                  onNutritionChange={handleNutritionChange}
+                  currentNutrition={currentNutrition}
+                />
               </div>
 
               {/* Sidebar Tools */}
