@@ -112,6 +112,17 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
     }
   };
 
+  const handleAddMeal = (meal: MealSuggestion) => {
+    console.log('MealSuggestions: Adding meal:', meal.name);
+    console.log('MealSuggestions: onAddMeal function:', typeof onAddMeal);
+    
+    if (typeof onAddMeal === 'function') {
+      onAddMeal(meal);
+    } else {
+      console.error('onAddMeal is not a function:', onAddMeal);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {suggestions.length === 0 ? (
@@ -148,7 +159,12 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => onAddMeal(meal)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Button clicked for meal:', meal.name);
+                    handleAddMeal(meal);
+                  }}
                   className="gradient-primary hover:shadow-lg text-white"
                 >
                   <Plus className="h-4 w-4 mr-1" />
