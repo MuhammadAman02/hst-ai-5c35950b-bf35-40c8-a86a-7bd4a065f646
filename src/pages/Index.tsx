@@ -362,7 +362,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* Planning Phase - Enhanced */}
+        {/* Planning Phase - Enhanced with Larger Sidebar */}
         {currentStep === 'planning' && (
           <div className="space-y-8">
             {/* Header */}
@@ -391,8 +391,9 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-              {/* Main Meal Planner */}
+            {/* ENHANCED LAYOUT: Larger sidebar for better navigation */}
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+              {/* Main Meal Planner - Takes 3 columns */}
               <div className="xl:col-span-3 animate-on-load" style={{ animationDelay: '100ms' }}>
                 <MealPlanner 
                   ref={mealPlannerRef}
@@ -401,8 +402,8 @@ const Index = () => {
                 />
               </div>
 
-              {/* Enhanced Sidebar */}
-              <div className="xl:col-span-1 space-y-6">
+              {/* MUCH LARGER Sidebar - Takes 2 columns for better usability */}
+              <div className="xl:col-span-2 space-y-6">
                 <div className="animate-on-load" style={{ animationDelay: '200ms' }}>
                   <Card className="glass-card hover-lift">
                     <CardHeader className="pb-4">
@@ -410,11 +411,11 @@ const Index = () => {
                         <div className="w-8 h-8 gradient-accent rounded-lg flex items-center justify-center">
                           <Sparkles className="h-4 w-4 text-white" />
                         </div>
-                        Smart Suggestions
+                        Smart Meal Suggestions
                       </CardTitle>
-                      <p className="text-sm text-gray-600">Precision-calculated for your needs</p>
+                      <p className="text-sm text-gray-600">Categorized by meal time with precision portions</p>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="max-h-[500px] overflow-y-auto custom-scrollbar">
                       <MealSuggestions 
                         progress={dailyProgress}
                         onAddMeal={handleAddMeal}
@@ -430,10 +431,11 @@ const Index = () => {
                         <div className="w-8 h-8 gradient-secondary rounded-lg flex items-center justify-center">
                           <Search className="h-4 w-4 text-white" />
                         </div>
-                        Ingredient Search
+                        Ingredient Database
                       </CardTitle>
+                      <p className="text-sm text-gray-600">Search and add individual ingredients</p>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="max-h-[400px] overflow-y-auto custom-scrollbar">
                       <IngredientSearch onAddIngredient={handleAddIngredient} />
                     </CardContent>
                   </Card>
