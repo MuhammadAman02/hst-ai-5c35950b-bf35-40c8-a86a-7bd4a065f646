@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, Target, Search, ChefHat, Bot, Sparkles, TrendingUp, Zap, ArrowRight, CheckCircle, Play, Star, Award, Flame } from 'lucide-react';
+import { Calculator, Target, Search, ChefHat, Bot, Sparkles, TrendingUp, Zap, ArrowRight, CheckCircle, Play, Star, Award, Flame, ArrowLeft } from 'lucide-react';
 import NutritionTargetsComponent from '../components/NutritionTargets';
 import NutritionCard from '../components/NutritionCard';
 import IngredientSearch from '../components/IngredientSearch';
@@ -17,6 +17,7 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState<'setup' | 'planning' | 'tracking'>('setup');
   const [hasSetTargets, setHasSetTargets] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
   const mealPlannerRef = useRef<MealPlannerRef>(null);
   
   const [nutritionTargets, setNutritionTargets] = useState<NutritionTargets>({
@@ -95,8 +96,8 @@ const Index = () => {
     setCurrentNutrition(nutrition);
   };
 
-  const handleTargetsSet = async (targets: NutritionTargets) => {
-    console.log('Setting new targets:', targets);
+  const handleTargetsSet = async (targets: NutritionTargets, preset?: string) => {
+    console.log('Setting new targets:', targets, 'with preset:', preset);
     setIsLoading(true);
     
     // Simulate API call with smooth transition
@@ -104,6 +105,9 @@ const Index = () => {
     
     setNutritionTargets(targets);
     setHasSetTargets(true);
+    if (preset) {
+      setSelectedPreset(preset);
+    }
     setCurrentStep('planning');
     setIsLoading(false);
   };
@@ -145,6 +149,146 @@ const Index = () => {
     if (stepIndex === currentIndex) return 'active';
     return 'upcoming';
   };
+
+  const getProgressPercentage = (current: number, target: number) => {
+    return Math.min((current / target) * 100, 100);
+  };
+
+  const getPresetDisplayName = (preset: string) => {
+    switch (preset) {
+      case 'weight-loss': return 'Weight Loss';
+      case 'muscle-gain': return 'Muscle Gain';
+      case 'maintenance': return 'Maintenance';
+      default: return 'Custom';
+    }
+  };
+
+  // Nutrition Summary Component for Planning Screen
+  const NutritionSummary = () => (
+    <Card className="glass-card mb-6">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-3">
+            <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center">
+              <Target className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <div>Your Daily Targets</div>
+              {selectedPreset && (
+                <div className="text-sm font-normal text-gray-500 mt-1">
+                  {getPresetDisplayName(selectedPreset)} Plan
+                </div>
+              )}
+            </div>
+          </CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleStepChange('setup')}
+            className="hover:bg-emerald-50 hover:text-emerald-700"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Edit Targets
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { 
+              name: 'Protein', 
+              current: currentNutrition.protein, 
+              target: nutritionTargets.protein, 
+              unit: 'g',
+              color: 'emerald',
+              icon: '💪'
+            },
+            { 
+              name: 'Carbs', 
+              current: currentNutrition.carbs, 
+              target: nutritionTargets.carbs, 
+              unit: 'g',
+              color: 'blue',
+              icon: '⚡'
+            },
+            { 
+              name: 'Fats', 
+              current: currentNutrition.fats, 
+              target: nutritionTargets.fats, 
+              unit: 'g',
+              color: 'purple',
+              icon: '🥑'
+            },
+            { 
+              name: 'Calories', 
+              current: currentNutrition.calories, 
+              target: nutritionTargets.calories, 
+              unit: 'kcal',
+              color: 'gray',
+              icon: '🔥'
+            }
+          ].map((item) => {
+            const percentage = getProgressPercentage(item.current, item.target);
+            const remaining = Math.max(0, item.target - item.current);
+            
+            return (
+              <div key={item.name} className={`bg-${item.color}-50 rounded-xl p-4 border border-${item.color}-200`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{item.icon}</span>
+                    <span className={`text-sm font-medium text-${item.color}-700`}>{item.name}</span>
+                  </div>
+                  <Badge variant="outline" className={`text-xs bg-${item.color}-100 text-${item.color}-700 border-${item.color}-300`}>
+                    {percentage.toFixed(0)}%
+                  </Badge>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className={`text-lg font-bold text-${item.color}-800`}>
+                    {item.current.toFixed(1)}
+                    <span className={`text-sm text-${item.color}-600 font-normal`}>
+                      /{item.target} {item.unit}
+                    </span>
+                  </div>
+                  
+                  <div className="w-full bg-white rounded-full h-2 overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r from-${item.color}-400 to-${item.color}-600 transition-all duration-500 ease-out`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  
+                  <div className={`text-xs text-${item.color}-600`}>
+                    {remaining > 0 ? `${remaining.toFixed(1)} ${item.unit} remaining` : 'Target achieved! 🎉'}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Overall Progress */}
+        <div className="mt-4 p-3 bg-white/60 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+            <span className="text-sm font-bold text-gray-900">
+              {((currentNutrition.protein + currentNutrition.carbs + currentNutrition.fats + currentNutrition.calories/10) / 
+                (nutritionTargets.protein + nutritionTargets.carbs + nutritionTargets.fats + nutritionTargets.calories/10) * 100).toFixed(0)}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="h-full bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 rounded-full transition-all duration-500"
+              style={{ 
+                width: `${Math.min(((currentNutrition.protein + currentNutrition.carbs + currentNutrition.fats + currentNutrition.calories/10) / 
+                  (nutritionTargets.protein + nutritionTargets.carbs + nutritionTargets.fats + nutritionTargets.calories/10) * 100), 100)}%` 
+              }}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
@@ -288,6 +432,7 @@ const Index = () => {
                 <NutritionTargetsComponent 
                   targets={nutritionTargets}
                   onTargetsChange={setNutritionTargets}
+                  onTargetsSet={handleTargetsSet}
                 />
               </div>
 
@@ -336,35 +481,19 @@ const Index = () => {
                     ))}
                   </CardContent>
                 </Card>
-
-                {/* CTA Button */}
-                <Button 
-                  onClick={() => handleTargetsSet(nutritionTargets)}
-                  disabled={isLoading}
-                  className="w-full gradient-primary hover:shadow-2xl text-white py-4 text-lg font-semibold rounded-2xl button-press hover-glow transition-all duration-300"
-                  size="lg"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Setting up your plan...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Play className="w-5 h-5" />
-                      <span>Start My Nutrition Journey</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </div>
-                  )}
-                </Button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Planning Phase - Enhanced with Larger Sidebar */}
+        {/* Planning Phase - Enhanced with Nutrition Summary */}
         {currentStep === 'planning' && (
           <div className="space-y-8">
+            {/* Nutrition Summary - Shows selected targets and real-time progress */}
+            <div className="animate-on-load">
+              <NutritionSummary />
+            </div>
+
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 animate-on-load">
               <div>
@@ -372,14 +501,6 @@ const Index = () => {
                 <p className="text-gray-600">Get AI-powered suggestions based on your remaining nutritional needs</p>
               </div>
               <div className="flex gap-3">
-                <Button 
-                  variant="outline"
-                  onClick={() => handleStepChange('setup')}
-                  className="hover:bg-emerald-50 hover:text-emerald-700 button-press"
-                >
-                  <Target className="w-4 h-4 mr-2" />
-                  Adjust Goals
-                </Button>
                 <Button 
                   onClick={() => handleStepChange('tracking')}
                   className="gradient-primary hover:shadow-lg text-white button-press"
