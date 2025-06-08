@@ -34,9 +34,12 @@ export interface MealSuggestion {
   totalNutrition: NutritionInfo;
   prepTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
-  category: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
-  targetNutrient?: 'protein' | 'carbs' | 'fats' | 'fiber' | 'vitaminC' | 'vitaminD' | 'calcium' | 'iron' | 'potassium' | 'balanced';
+  category: string;
+  targetNutrient?: string;
   reason?: string;
+  cuisine?: string;
+  instructions?: string[];
+  isAIGenerated?: boolean;
 }
 
 export interface DailyProgress {
