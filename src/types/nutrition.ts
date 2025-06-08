@@ -31,12 +31,12 @@ export interface MealSuggestion {
   id: string;
   name: string;
   category: string;
+  cuisine: string;
+  difficulty: string;
+  prepTime: number;
+  reason: string;
   ingredients: MealIngredient[];
   totalNutrition: NutritionInfo;
-  prepTime: number;
-  difficulty: string;
-  cuisine: string;
-  reason?: string;
   instructions?: string[];
 }
 
