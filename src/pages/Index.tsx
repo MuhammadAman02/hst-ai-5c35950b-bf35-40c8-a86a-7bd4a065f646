@@ -114,6 +114,11 @@ const Index = () => {
 
   const handleStepChange = (step: 'setup' | 'planning' | 'tracking') => {
     console.log('Changing step to:', step);
+    // Only allow navigation to planning/tracking if targets have been set
+    if ((step === 'planning' || step === 'tracking') && !hasSetTargets) {
+      console.log('Cannot navigate to', step, 'without setting targets first');
+      return;
+    }
     setCurrentStep(step);
   };
 
@@ -324,17 +329,19 @@ const Index = () => {
             <div className="hidden lg:flex items-center space-x-2">
               {steps.map((step, index) => {
                 const status = getStepStatus(step.id);
+                const canNavigate = step.id === 'setup' || hasSetTargets;
+                
                 return (
                   <div key={step.id} className="flex items-center animate-on-load" style={{ animationDelay: `${index * 100}ms` }}>
                     <button
-                      onClick={() => handleStepChange(step.id as 'setup' | 'planning' | 'tracking')}
-                      disabled={!hasSetTargets && step.id !== 'setup'}
+                      onClick={() => canNavigate && handleStepChange(step.id as 'setup' | 'planning' | 'tracking')}
+                      disabled={!canNavigate}
                       className={`group relative flex items-center space-x-3 px-4 py-2 rounded-2xl transition-all duration-300 ${
                         status === 'active' 
                           ? `bg-gradient-to-r ${step.color} text-white shadow-lg hover-glow` 
                           : status === 'completed'
                             ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                            : hasSetTargets || step.id === 'setup'
+                            : canNavigate
                               ? 'bg-white/60 text-gray-600 hover:bg-white/80 hover:text-gray-800 hover-lift'
                               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       } button-press`}
@@ -386,6 +393,18 @@ const Index = () => {
 
       {/* Main Content with Modern Transitions */}
       <main className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+        {/* Loading State */}
+        {isLoading && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-8 shadow-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-lg font-medium text-gray-700">Setting up your nutrition plan...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Setup Phase - Redesigned */}
         {currentStep === 'setup' && (
           <div className="max-w-6xl mx-auto space-modern">
@@ -487,7 +506,7 @@ const Index = () => {
         )}
 
         {/* Planning Phase - Enhanced with Nutrition Summary */}
-        {currentStep === 'planning' && (
+        {currentStep === 'planning' && hasSetTargets && (
           <div className="space-y-8">
             {/* Nutrition Summary - Shows selected targets and real-time progress */}
             <div className="animate-on-load">
@@ -567,7 +586,7 @@ const Index = () => {
         )}
 
         {/* Tracking Phase - Enhanced */}
-        {currentStep === 'tracking' && (
+        {currentStep === 'tracking' && hasSetTargets && (
           <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 animate-on-load">
@@ -606,6 +625,26 @@ const Index = () => {
                 <AIChat progress={dailyProgress} />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Fallback for when trying to access planning/tracking without targets */}
+        {(currentStep === 'planning' || currentStep === 'tracking') && !hasSetTargets && (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Target className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Set Your Targets First</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              You need to set your nutrition targets before you can start planning meals or tracking progress.
+            </p>
+            <Button 
+              onClick={() => setCurrentStep('setup')}
+              className="gradient-primary hover:shadow-lg text-white"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Set Nutrition Targets
+            </Button>
           </div>
         )}
       </main>
