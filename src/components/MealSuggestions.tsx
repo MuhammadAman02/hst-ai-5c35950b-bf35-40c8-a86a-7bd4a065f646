@@ -4,9 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, ChefHat, Plus, Sparkles, Target, Zap, Calculator, Sunrise, Sun, Sunset, Moon, Bot, Send, Loader2, Wand2, Globe, Star } from 'lucide-react';
+import { Clock, ChefHat, Plus, Sparkles, Target, Zap, Calculator, Sunrise, Sun, Sunset, Moon, Bot, Send, Loader2, Wand2, Globe, Star, AlertCircle } from 'lucide-react';
 import { MealSuggestion, DailyProgress, NutritionInfo } from '../types/nutrition';
 import { presetMealPlans, generateAIMealPlan } from '../data/mealPlans';
+import { generateAIMealWithOpenAI } from '../services/openai';
 
 interface MealSuggestionsProps {
   progress: DailyProgress;
@@ -19,6 +20,11 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
   const [aiInput, setAiInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiGeneratedMeal, setAiGeneratedMeal] = useState<MealSuggestion | null>(null);
+  const [useOpenAI, setUseOpenAI] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Check if OpenAI API key is available
+  const hasOpenAIKey = !!import.meta.env.VITE_OPENAI_API_KEY;
 
   // Determine which preset to use based on current targets
   const getPresetType = (): 'weight-loss' | 'muscle-gain' | 'maintenance' => {
@@ -63,22 +69,30 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
     if (!aiInput.trim() || isGenerating) return;
 
     setIsGenerating(true);
+    setError(null);
     console.log('Generating AI meal for:', aiInput, 'meal type:', activeTab);
 
     try {
       const targets = calculateMealTargets(activeTab);
       console.log('Calculated targets for AI meal:', targets);
 
-      // Extract cuisine from user input
-      const cuisine = extractCuisine(aiInput) || 'american';
-      console.log('Detected cuisine:', cuisine);
+      let aiMeal: MealSuggestion;
 
-      const aiMeal = await generateAIMealPlan(cuisine, activeTab, targets);
+      if (hasOpenAIKey && useOpenAI) {
+        console.log('Using OpenAI for meal generation');
+        aiMeal = await generateAIMealWithOpenAI(aiInput, activeTab, targets);
+      } else {
+        console.log('Using fallback AI generation');
+        // Extract cuisine from user input
+        const cuisine = extractCuisine(aiInput) || 'american';
+        aiMeal = await generateAIMealPlan(cuisine, activeTab, targets);
+      }
+
       console.log('Generated AI meal:', aiMeal);
-
       setAiGeneratedMeal(aiMeal);
     } catch (error) {
       console.error('Error generating AI meal:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate meal. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -171,6 +185,12 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
         <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
           {presetType.replace('-', ' ')} plan
         </Badge>
+        {hasOpenAIKey && (
+          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+            <Bot className="h-3 w-3 mr-1" />
+            OpenAI Powered
+          </Badge>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -312,11 +332,28 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold text-emerald-800 flex items-center gap-2">
                     <Bot className="h-5 w-5" />
-                    AI {category.name} Generator
+                    {hasOpenAIKey ? 'OpenAI' : 'AI'} {category.name} Generator
+                    {hasOpenAIKey && (
+                      <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs">
+                        GPT-4 Powered
+                      </Badge>
+                    )}
                   </CardTitle>
                   <p className="text-sm text-emerald-700">
-                    Tell me what you're craving for {category.name.toLowerCase()} and I'll create a recipe that meets your nutrition targets!
+                    {hasOpenAIKey 
+                      ? `Tell me what you're craving for ${category.name.toLowerCase()} and I'll use OpenAI to create a personalized recipe that meets your nutrition targets!`
+                      : `Tell me what you're craving for ${category.name.toLowerCase()} and I'll create a recipe that meets your nutrition targets!`
+                    }
                   </p>
+                  {!hasOpenAIKey && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200 mt-2">
+                      <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-amber-700">
+                        <p className="font-medium">OpenAI Integration Available</p>
+                        <p>Add your OpenAI API key as VITE_OPENAI_API_KEY environment variable for enhanced AI meal generation with GPT-4.</p>
+                      </div>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* AI Input */}
@@ -387,16 +424,32 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
                     </div>
                   </div>
 
+                  {/* Error Display */}
+                  {error && (
+                    <div className="flex items-start gap-2 p-3 bg-red-50 rounded-lg border border-red-200">
+                      <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-red-700">
+                        <p className="font-medium">Generation Failed</p>
+                        <p>{error}</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* AI Generated Meal Display */}
                   {isGenerating && activeTab === category.id && (
                     <Card className="border border-blue-200 bg-blue-50">
                       <CardContent className="p-6 text-center">
                         <div className="flex items-center justify-center gap-3 mb-4">
                           <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                          <span className="font-medium text-blue-800">AI Chef is creating your {category.name.toLowerCase()}...</span>
+                          <span className="font-medium text-blue-800">
+                            {hasOpenAIKey ? 'OpenAI is creating' : 'AI Chef is creating'} your {category.name.toLowerCase()}...
+                          </span>
                         </div>
                         <div className="text-sm text-blue-600">
-                          Analyzing your cravings and calculating perfect portions for your nutrition goals
+                          {hasOpenAIKey 
+                            ? 'Using GPT-4 to analyze your cravings and calculate perfect portions for your nutrition goals'
+                            : 'Analyzing your cravings and calculating perfect portions for your nutrition goals'
+                          }
                         </div>
                       </CardContent>
                     </Card>
@@ -412,7 +465,7 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
                           </CardTitle>
                           <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                             <Bot className="h-3 w-3 mr-1" />
-                            AI Generated
+                            {hasOpenAIKey ? 'OpenAI Generated' : 'AI Generated'}
                           </Badge>
                         </div>
                         <p className="text-sm text-blue-700">{aiGeneratedMeal.reason}</p>
@@ -443,7 +496,9 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
 
                         <div className="space-y-3">
                           <div>
-                            <div className="font-medium text-gray-700 mb-2">AI-Calculated Ingredients:</div>
+                            <div className="font-medium text-gray-700 mb-2">
+                              {hasOpenAIKey ? 'OpenAI-Calculated' : 'AI-Calculated'} Ingredients:
+                            </div>
                             <div className="space-y-1">
                               {aiGeneratedMeal.ingredients.map((item, index) => (
                                 <div key={index} className="flex justify-between items-center text-sm bg-white rounded px-3 py-2 border">
@@ -475,7 +530,9 @@ const MealSuggestions: React.FC<MealSuggestionsProps> = ({ progress, onAddMeal }
 
                           {aiGeneratedMeal.instructions && (
                             <div className="pt-2 border-t border-gray-200">
-                              <div className="font-medium text-gray-700 mb-2">Cooking Instructions:</div>
+                              <div className="font-medium text-gray-700 mb-2">
+                                {hasOpenAIKey ? 'OpenAI' : 'AI'} Cooking Instructions:
+                              </div>
                               <ol className="text-sm text-gray-600 space-y-2">
                                 {aiGeneratedMeal.instructions.map((instruction, index) => (
                                   <li key={index} className="flex gap-2">
