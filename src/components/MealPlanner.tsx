@@ -2,7 +2,7 @@ import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Utensils, Plus, Sparkles, Clock, ChefHat, Target, Zap } from 'lucide-react';
+import { Trash2, Utensils, Plus, Sparkles, Clock, ChefHat, Target, Zap, ArrowRight, CheckCircle, Play, Star, Award, Flame } from 'lucide-react';
 import { Ingredient, NutritionInfo, MealSuggestion } from '../types/nutrition';
 
 interface MealPlannerProps {
@@ -17,6 +17,7 @@ interface MealItem {
   type: 'ingredient' | 'meal';
   mealData?: MealSuggestion;
   addedAt: Date;
+  mealTime?: string;
 }
 
 export interface MealPlannerRef {
@@ -77,6 +78,13 @@ const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionC
     onNutritionChange(total);
   };
 
+  const determineMealTime = (currentItemCount: number): string => {
+    if (currentItemCount < 3) return 'Breakfast';
+    if (currentItemCount < 6) return 'Lunch';
+    if (currentItemCount < 9) return 'Dinner';
+    return 'Snacks';
+  };
+
   const addIngredient = (ingredient: Ingredient, amount: number) => {
     console.log('Adding ingredient to meal plan:', ingredient.name, amount);
     const newItem: MealItem = {
@@ -84,12 +92,17 @@ const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionC
       ingredient,
       amount,
       type: 'ingredient',
-      addedAt: new Date()
+      addedAt: new Date(),
+      mealTime: determineMealTime(mealItems.length)
     };
 
-    const newItems = [...mealItems, newItem];
-    setMealItems(newItems);
-    updateTotalNutrition(newItems);
+    // CRITICAL FIX: Use functional update to prevent race conditions
+    setMealItems(prevItems => {
+      const newItems = [...prevItems, newItem];
+      // Update nutrition after state is set
+      setTimeout(() => updateTotalNutrition(newItems), 0);
+      return newItems;
+    });
     
     // Highlight recently added item
     setRecentlyAdded(newItem.id);
@@ -98,36 +111,42 @@ const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionC
 
   const addMeal = (meal: MealSuggestion) => {
     console.log('Adding meal to meal plan:', meal.name);
-    const newItems: MealItem[] = [];
+    
+    // CRITICAL FIX: Create all meal items at once to prevent disappearing
+    const newItems: MealItem[] = meal.ingredients.map((mealIngredient, index) => ({
+      id: `meal-${meal.id}-${Date.now()}-${index}-${Math.random()}`,
+      ingredient: mealIngredient.ingredient,
+      amount: mealIngredient.amount,
+      type: 'meal' as const,
+      mealData: meal,
+      addedAt: new Date(),
+      mealTime: meal.category || determineMealTime(mealItems.length)
+    }));
 
-    meal.ingredients.forEach(mealIngredient => {
-      const newItem: MealItem = {
-        id: `meal-${meal.id}-${Date.now()}-${Math.random()}`,
-        ingredient: mealIngredient.ingredient,
-        amount: mealIngredient.amount,
-        type: 'meal',
-        mealData: meal,
-        addedAt: new Date()
-      };
-      newItems.push(newItem);
+    // CRITICAL FIX: Use functional update and add all items at once
+    setMealItems(prevItems => {
+      const updatedItems = [...prevItems, ...newItems];
+      // Update nutrition after state is set
+      setTimeout(() => updateTotalNutrition(updatedItems), 0);
+      return updatedItems;
     });
-
-    const updatedItems = [...mealItems, ...newItems];
-    setMealItems(updatedItems);
-    updateTotalNutrition(updatedItems);
     
     // Highlight recently added items
-    newItems.forEach(item => {
-      setRecentlyAdded(item.id);
-      setTimeout(() => setRecentlyAdded(null), 2000);
+    newItems.forEach((item, index) => {
+      setTimeout(() => {
+        setRecentlyAdded(item.id);
+        setTimeout(() => setRecentlyAdded(null), 2000);
+      }, index * 100);
     });
   };
 
   const removeItem = (itemId: string) => {
     console.log('Removing item from meal plan:', itemId);
-    const newItems = mealItems.filter(item => item.id !== itemId);
-    setMealItems(newItems);
-    updateTotalNutrition(newItems);
+    setMealItems(prevItems => {
+      const newItems = prevItems.filter(item => item.id !== itemId);
+      setTimeout(() => updateTotalNutrition(newItems), 0);
+      return newItems;
+    });
   };
 
   const clearAll = () => {
@@ -154,19 +173,28 @@ const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionC
   }));
 
   const totalCalories = mealItems.reduce((total, item) => {
-    const nutrition = calculateNutrition(item.ingredient, item.amount);
-    return total + nutrition.calories;
+    if (item.type === 'ingredient') {
+      const nutrition = calculateNutrition(item.ingredient, item.amount);
+      return total + nutrition.calories;
+    } else if (item.type === 'meal' && item.mealData) {
+      return total + item.mealData.totalNutrition.calories;
+    }
+    return total;
   }, 0);
 
-  const getMealTimeIcon = (index: number) => {
-    if (index < 2) return '🌅'; // Breakfast
-    if (index < 4) return '☀️'; // Lunch
-    if (index < 6) return '🌆'; // Dinner
-    return '🌙'; // Snacks
+  const getMealTimeIcon = (mealTime: string) => {
+    switch (mealTime) {
+      case 'Breakfast': return '🌅';
+      case 'Lunch': return '☀️';
+      case 'Dinner': return '🌆';
+      case 'Snacks': return '🌙';
+      default: return '🍽️';
+    }
   };
 
-  const groupedMeals = mealItems.reduce((groups, item, index) => {
-    const mealTime = index < 2 ? 'Breakfast' : index < 4 ? 'Lunch' : index < 6 ? 'Dinner' : 'Snacks';
+  // Group meals by meal time
+  const groupedMeals = mealItems.reduce((groups, item) => {
+    const mealTime = item.mealTime || 'Other';
     if (!groups[mealTime]) groups[mealTime] = [];
     groups[mealTime].push(item);
     return groups;
@@ -256,7 +284,7 @@ const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionC
               <div key={mealTime} className="space-y-3">
                 {/* Meal Time Header */}
                 <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                  <div className="text-2xl">{getMealTimeIcon(0)}</div>
+                  <div className="text-2xl">{getMealTimeIcon(mealTime)}</div>
                   <h4 className="font-semibold text-gray-800">{mealTime}</h4>
                   <Badge variant="outline" className="text-xs bg-gray-50">
                     {items.length} item{items.length !== 1 ? 's' : ''}
@@ -266,7 +294,9 @@ const MealPlanner = forwardRef<MealPlannerRef, MealPlannerProps>(({ onNutritionC
                 {/* Meal Items */}
                 <div className="space-y-3">
                   {items.map((item, index) => {
-                    const nutrition = calculateNutrition(item.ingredient, item.amount);
+                    const nutrition = item.type === 'ingredient' 
+                      ? calculateNutrition(item.ingredient, item.amount)
+                      : item.mealData?.totalNutrition || { protein: 0, carbs: 0, fats: 0, calories: 0, fiber: 0, vitaminC: 0, vitaminD: 0, calcium: 0, iron: 0, potassium: 0 };
                     const isRecent = recentlyAdded === item.id;
                     
                     return (
