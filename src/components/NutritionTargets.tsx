@@ -3,17 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Target, Zap, TrendingUp, Activity } from 'lucide-react';
+import { Target, Zap, TrendingUp, Activity, Play, ArrowRight } from 'lucide-react';
 import { NutritionTargets } from '../types/nutrition';
 
 interface NutritionTargetsProps {
   targets: NutritionTargets;
   onTargetsChange: (targets: NutritionTargets) => void;
+  onTargetsSet?: (targets: NutritionTargets, preset?: string) => void;
 }
 
 const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
   targets,
-  onTargetsChange
+  onTargetsChange,
+  onTargetsSet
 }) => {
   console.log('NutritionTargets component rendered with targets:', targets);
 
@@ -77,6 +79,12 @@ const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
     onTargetsChange(newTargets);
   };
 
+  const handleStartPlanning = (preset?: string) => {
+    if (onTargetsSet) {
+      onTargetsSet(targets, preset);
+    }
+  };
+
   return (
     <Card className="glass-card hover-lift">
       <CardHeader className="pb-4">
@@ -99,7 +107,7 @@ const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
               className="justify-start text-sm hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition-all duration-200"
             >
               <TrendingUp className="h-4 w-4 mr-2" />
-              Weight Loss
+              Weight Loss (120g protein, 1500 cal)
             </Button>
             <Button 
               variant="outline" 
@@ -108,7 +116,7 @@ const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
               className="justify-start text-sm hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all duration-200"
             >
               <Zap className="h-4 w-4 mr-2" />
-              Muscle Gain
+              Muscle Gain (150g protein, 2200 cal)
             </Button>
             <Button 
               variant="outline" 
@@ -117,7 +125,7 @@ const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
               className="justify-start text-sm hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all duration-200"
             >
               <Activity className="h-4 w-4 mr-2" />
-              Maintenance
+              Maintenance (100g protein, 1800 cal)
             </Button>
           </div>
         </div>
@@ -222,6 +230,42 @@ const NutritionTargetsComponent: React.FC<NutritionTargetsProps> = ({
               />
             </div>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-3 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 gap-2">
+            <Button 
+              onClick={() => handleStartPlanning('weight-loss')}
+              className="w-full gradient-primary hover:shadow-lg text-white py-3 text-sm font-semibold rounded-xl button-press hover-glow transition-all duration-300"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Weight Loss Plan
+            </Button>
+            <Button 
+              onClick={() => handleStartPlanning('muscle-gain')}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:shadow-lg text-white py-3 text-sm font-semibold rounded-xl button-press hover-glow transition-all duration-300"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Start Muscle Gain Plan
+            </Button>
+            <Button 
+              onClick={() => handleStartPlanning('maintenance')}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white py-3 text-sm font-semibold rounded-xl button-press hover-glow transition-all duration-300"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              Start Maintenance Plan
+            </Button>
+          </div>
+          
+          <Button 
+            onClick={() => handleStartPlanning()}
+            variant="outline"
+            className="w-full hover:bg-gray-50 py-3 text-sm font-semibold rounded-xl button-press transition-all duration-300"
+          >
+            Use Custom Targets
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </CardContent>
     </Card>
