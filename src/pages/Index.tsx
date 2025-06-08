@@ -56,6 +56,16 @@ const Index = () => {
     });
   }, [currentStep]);
 
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('State changed:', {
+      currentStep,
+      hasSetTargets,
+      selectedPreset,
+      nutritionTargets
+    });
+  }, [currentStep, hasSetTargets, selectedPreset, nutritionTargets]);
+
   const calculateRemaining = (): NutritionInfo => {
     return {
       protein: Math.max(0, nutritionTargets.protein - currentNutrition.protein),
@@ -100,25 +110,42 @@ const Index = () => {
     console.log('Setting new targets:', targets, 'with preset:', preset);
     setIsLoading(true);
     
-    // Simulate API call with smooth transition
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    setNutritionTargets(targets);
-    setHasSetTargets(true);
-    if (preset) {
-      setSelectedPreset(preset);
+    try {
+      // Simulate API call with smooth transition
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Update all states synchronously
+      setNutritionTargets(targets);
+      if (preset) {
+        setSelectedPreset(preset);
+      }
+      setHasSetTargets(true);
+      
+      console.log('Targets set successfully, navigating to planning...');
+      setCurrentStep('planning');
+    } catch (error) {
+      console.error('Error setting targets:', error);
+    } finally {
+      setIsLoading(false);
     }
-    setCurrentStep('planning');
-    setIsLoading(false);
   };
 
   const handleStepChange = (step: 'setup' | 'planning' | 'tracking') => {
-    console.log('Changing step to:', step);
+    console.log('Attempting to change step to:', step, 'hasSetTargets:', hasSetTargets);
+    
+    // Allow navigation to setup always
+    if (step === 'setup') {
+      setCurrentStep(step);
+      return;
+    }
+    
     // Only allow navigation to planning/tracking if targets have been set
     if ((step === 'planning' || step === 'tracking') && !hasSetTargets) {
       console.log('Cannot navigate to', step, 'without setting targets first');
       return;
     }
+    
+    console.log('Navigating to step:', step);
     setCurrentStep(step);
   };
 
@@ -295,8 +322,26 @@ const Index = () => {
     </Card>
   );
 
+  // Debug render function
+  const renderDebugInfo = () => {
+    if (process.env.NODE_ENV === 'development') {
+      return (
+        <div className="fixed bottom-4 right-4 bg-black text-white p-2 rounded text-xs z-50">
+          <div>Step: {currentStep}</div>
+          <div>HasTargets: {hasSetTargets.toString()}</div>
+          <div>Preset: {selectedPreset || 'none'}</div>
+          <div>Loading: {isLoading.toString()}</div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 relative overflow-hidden">
+      {/* Debug Info */}
+      {renderDebugInfo()}
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-emerald-400/20 to-blue-400/20 rounded-full blur-3xl animate-float"></div>
@@ -506,29 +551,16 @@ const Index = () => {
         )}
 
         {/* Planning Phase - Enhanced with Nutrition Summary */}
-        {currentStep === 'planning' && hasSetTargets && (
+        {currentStep === 'planning' && (
           <div className="space-y-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Plan Your Perfect Day</h2>
+              <p className="text-gray-600">Get AI-powered suggestions based on your remaining nutritional needs</p>
+            </div>
+
             {/* Nutrition Summary - Shows selected targets and real-time progress */}
             <div className="animate-on-load">
               <NutritionSummary />
-            </div>
-
-            {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 animate-on-load">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Plan Your Perfect Day</h2>
-                <p className="text-gray-600">Get AI-powered suggestions based on your remaining nutritional needs</p>
-              </div>
-              <div className="flex gap-3">
-                <Button 
-                  onClick={() => handleStepChange('tracking')}
-                  className="gradient-primary hover:shadow-lg text-white button-press"
-                  disabled={currentNutrition.calories === 0}
-                >
-                  View Progress
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
             </div>
 
             {/* ENHANCED LAYOUT: Larger sidebar for better navigation */}
@@ -582,11 +614,31 @@ const Index = () => {
                 </div>
               </div>
             </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between items-center pt-6">
+              <Button 
+                variant="outline"
+                onClick={() => handleStepChange('setup')}
+                className="hover:bg-gray-50 button-press"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Setup
+              </Button>
+              <Button 
+                onClick={() => handleStepChange('tracking')}
+                className="gradient-primary hover:shadow-lg text-white button-press"
+                disabled={currentNutrition.calories === 0}
+              >
+                View Progress
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         )}
 
         {/* Tracking Phase - Enhanced */}
-        {currentStep === 'tracking' && hasSetTargets && (
+        {currentStep === 'tracking' && (
           <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 animate-on-load">
@@ -625,26 +677,6 @@ const Index = () => {
                 <AIChat progress={dailyProgress} />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Fallback for when trying to access planning/tracking without targets */}
-        {(currentStep === 'planning' || currentStep === 'tracking') && !hasSetTargets && (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Target className="w-10 h-10 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Set Your Targets First</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              You need to set your nutrition targets before you can start planning meals or tracking progress.
-            </p>
-            <Button 
-              onClick={() => setCurrentStep('setup')}
-              className="gradient-primary hover:shadow-lg text-white"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              Set Nutrition Targets
-            </Button>
           </div>
         )}
       </main>
