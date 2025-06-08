@@ -14,7 +14,6 @@ import { NutritionTargets, NutritionInfo, DailyProgress, Ingredient, MealSuggest
 const Index = () => {
   console.log('Index page rendered');
 
-  // Simple state management
   const [currentView, setCurrentView] = useState<'setup' | 'planning' | 'tracking'>('setup');
   const [selectedPreset, setSelectedPreset] = useState<string>('');
   const mealPlannerRef = useRef<MealPlannerRef>(null);
