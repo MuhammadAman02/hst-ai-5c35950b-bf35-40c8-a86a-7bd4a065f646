@@ -30,16 +30,14 @@ export interface MealIngredient {
 export interface MealSuggestion {
   id: string;
   name: string;
+  category: string;
   ingredients: MealIngredient[];
   totalNutrition: NutritionInfo;
   prepTime: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  category: string;
-  targetNutrient?: string;
+  difficulty: string;
+  cuisine: string;
   reason?: string;
-  cuisine?: string;
   instructions?: string[];
-  isAIGenerated?: boolean;
 }
 
 export interface DailyProgress {
