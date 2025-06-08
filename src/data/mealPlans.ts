@@ -1,7 +1,7 @@
 import { MealSuggestion, NutritionInfo } from '../types/nutrition';
 import { ingredients } from './ingredients';
 
-// Helper function to find ingredient by ID
+// Helper function to find ingredient by id
 const findIngredient = (id: string) => {
   const ingredient = ingredients.find(ing => ing.id === id);
   if (!ingredient) {
@@ -11,272 +11,286 @@ const findIngredient = (id: string) => {
 };
 
 // Helper function to calculate total nutrition for a meal
-const calculateMealNutrition = (mealIngredients: Array<{ ingredientId: string; amount: number }>): NutritionInfo => {
-  const total: NutritionInfo = {
-    protein: 0,
-    carbs: 0,
-    fats: 0,
-    calories: 0,
-    fiber: 0,
-    vitaminC: 0,
-    vitaminD: 0,
-    calcium: 0,
-    iron: 0,
-    potassium: 0
-  };
-
-  mealIngredients.forEach(({ ingredientId, amount }) => {
-    const ingredient = findIngredient(ingredientId);
-    const factor = amount / 100;
-    
-    Object.keys(total).forEach(key => {
-      total[key as keyof NutritionInfo] += ingredient.nutritionPer100g[key as keyof NutritionInfo] * factor;
-    });
+const calculateTotalNutrition = (mealIngredients: Array<{ ingredient: any; amount: number }>): NutritionInfo => {
+  return mealIngredients.reduce((total, item) => {
+    const factor = item.amount / 100;
+    return {
+      protein: total.protein + (item.ingredient.nutritionPer100g.protein * factor),
+      carbs: total.carbs + (item.ingredient.nutritionPer100g.carbs * factor),
+      fats: total.fats + (item.ingredient.nutritionPer100g.fats * factor),
+      calories: total.calories + (item.ingredient.nutritionPer100g.calories * factor),
+      fiber: total.fiber + (item.ingredient.nutritionPer100g.fiber * factor),
+      vitaminC: total.vitaminC + (item.ingredient.nutritionPer100g.vitaminC * factor),
+      vitaminD: total.vitaminD + (item.ingredient.nutritionPer100g.vitaminD * factor),
+      calcium: total.calcium + (item.ingredient.nutritionPer100g.calcium * factor),
+      iron: total.iron + (item.ingredient.nutritionPer100g.iron * factor),
+      potassium: total.potassium + (item.ingredient.nutritionPer100g.potassium * factor)
+    };
+  }, {
+    protein: 0, carbs: 0, fats: 0, calories: 0, fiber: 0,
+    vitaminC: 0, vitaminD: 0, calcium: 0, iron: 0, potassium: 0
   });
-
-  return total;
 };
 
-// Preset meal plans for different goals
-export const presetMealPlans: Record<string, MealSuggestion[]> = {
-  'weight-loss': [
-    {
-      id: 'wl-protein-power-breakfast',
-      name: 'Protein Power Breakfast',
-      category: 'Breakfast',
-      cuisine: 'American',
-      difficulty: 'Easy',
-      prepTime: 10,
-      reason: 'High protein breakfast to kickstart your metabolism and keep you full',
-      ingredients: [
-        { ingredient: findIngredient('greek-yogurt'), amount: 200 },
-        { ingredient: findIngredient('almonds'), amount: 20 },
-        { ingredient: findIngredient('spinach'), amount: 50 }
-      ],
-      totalNutrition: calculateMealNutrition([
-        { ingredientId: 'greek-yogurt', amount: 200 },
-        { ingredientId: 'almonds', amount: 20 },
-        { ingredientId: 'spinach', amount: 50 }
-      ]),
-      instructions: [
-        'Mix Greek yogurt in a bowl',
-        'Add chopped almonds on top',
-        'Add fresh spinach leaves',
-        'Mix gently and enjoy'
-      ]
-    },
-    {
-      id: 'wl-lean-lunch',
-      name: 'Lean Chicken Power Bowl',
-      category: 'Lunch',
-      cuisine: 'Mediterranean',
-      difficulty: 'Medium',
-      prepTime: 25,
-      reason: 'Perfect balance of lean protein and complex carbs for sustained energy',
-      ingredients: [
-        { ingredient: findIngredient('chicken-breast'), amount: 150 },
-        { ingredient: findIngredient('quinoa'), amount: 60 },
-        { ingredient: findIngredient('broccoli'), amount: 100 },
-        { ingredient: findIngredient('avocado'), amount: 50 }
-      ],
-      totalNutrition: calculateMealNutrition([
-        { ingredientId: 'chicken-breast', amount: 150 },
-        { ingredientId: 'quinoa', amount: 60 },
-        { ingredientId: 'broccoli', amount: 100 },
-        { ingredientId: 'avocado', amount: 50 }
-      ]),
-      instructions: [
-        'Cook quinoa according to package instructions',
-        'Season and grill chicken breast until cooked through',
-        'Steam broccoli until tender',
-        'Slice avocado',
-        'Combine all ingredients in a bowl and serve'
-      ]
-    },
-    {
-      id: 'wl-omega-dinner',
-      name: 'Omega-Rich Salmon Dinner',
-      category: 'Dinner',
-      cuisine: 'Nordic',
-      difficulty: 'Medium',
-      prepTime: 20,
-      reason: 'Rich in omega-3 fatty acids and high-quality protein for recovery',
-      ingredients: [
-        { ingredient: findIngredient('salmon'), amount: 120 },
-        { ingredient: findIngredient('sweet-potato'), amount: 150 },
-        { ingredient: findIngredient('spinach'), amount: 100 }
-      ],
-      totalNutrition: calculateMealNutrition([
-        { ingredientId: 'salmon', amount: 120 },
-        { ingredientId: 'sweet-potato', amount: 150 },
-        { ingredientId: 'spinach', amount: 100 }
-      ]),
-      instructions: [
-        'Preheat oven to 400°F (200°C)',
-        'Roast sweet potato for 25 minutes',
-        'Pan-sear salmon for 4-5 minutes each side',
-        'Sauté spinach with garlic',
-        'Plate and serve hot'
-      ]
-    }
-  ],
-  'muscle-gain': [
-    {
-      id: 'mg-power-breakfast',
-      name: 'Muscle Building Breakfast',
-      category: 'Breakfast',
-      cuisine: 'American',
-      difficulty: 'Easy',
-      prepTime: 15,
-      reason: 'High protein and carbs to fuel your workouts and muscle growth',
-      ingredients: [
-        { ingredient: findIngredient('greek-yogurt'), amount: 250 },
-        { ingredient: findIngredient('almonds'), amount: 40 },
-        { ingredient: findIngredient('quinoa'), amount: 50 }
-      ],
-      totalNutrition: calculateMealNutrition([
-        { ingredientId: 'greek-yogurt', amount: 250 },
-        { ingredientId: 'almonds', amount: 40 },
-        { ingredientId: 'quinoa', amount: 50 }
-      ]),
-      instructions: [
-        'Cook quinoa and let it cool',
-        'Mix Greek yogurt with cooked quinoa',
-        'Top with chopped almonds',
-        'Add a drizzle of honey if desired'
-      ]
-    },
-    {
-      id: 'mg-power-lunch',
-      name: 'Muscle Gain Power Lunch',
-      category: 'Lunch',
-      cuisine: 'American',
-      difficulty: 'Medium',
-      prepTime: 30,
-      reason: 'Maximum protein and complex carbs for serious muscle building',
-      ingredients: [
-        { ingredient: findIngredient('chicken-breast'), amount: 200 },
-        { ingredient: findIngredient('brown-rice'), amount: 80 },
-        { ingredient: findIngredient('avocado'), amount: 80 },
-        { ingredient: findIngredient('broccoli'), amount: 150 }
-      ],
-      totalNutrition: calculateMealNutrition([
-        { ingredientId: 'chicken-breast', amount: 200 },
-        { ingredientId: 'brown-rice', amount: 80 },
-        { ingredientId: 'avocado', amount: 80 },
-        { ingredientId: 'broccoli', amount: 150 }
-      ]),
-      instructions: [
-        'Cook brown rice according to package instructions',
-        'Season and grill chicken breast',
-        'Steam broccoli until tender',
-        'Slice avocado',
-        'Combine all ingredients and serve'
-      ]
-    }
-  ],
-  'maintenance': [
-    {
-      id: 'mt-balanced-breakfast',
-      name: 'Balanced Morning Bowl',
-      category: 'Breakfast',
-      cuisine: 'Mediterranean',
-      difficulty: 'Easy',
-      prepTime: 10,
-      reason: 'Perfect balance of macronutrients to maintain your current weight',
-      ingredients: [
-        { ingredient: findIngredient('greek-yogurt'), amount: 150 },
-        { ingredient: findIngredient('almonds'), amount: 25 },
-        { ingredient: findIngredient('spinach'), amount: 75 }
-      ],
-      totalNutrition: calculateMealNutrition([
-        { ingredientId: 'greek-yogurt', amount: 150 },
-        { ingredientId: 'almonds', amount: 25 },
-        { ingredientId: 'spinach', amount: 75 }
-      ]),
-      instructions: [
-        'Mix Greek yogurt in a bowl',
-        'Add fresh spinach',
-        'Top with sliced almonds',
-        'Enjoy fresh'
-      ]
-    }
-  ]
+// Weight Loss Meal Plans (120g protein, 1500 calories)
+const weightLossPlans: MealSuggestion[] = [
+  {
+    id: 'wl-protein-breakfast',
+    name: 'High-Protein Breakfast Bowl',
+    category: 'Breakfast',
+    cuisine: 'American',
+    difficulty: 'Easy',
+    prepTime: 10,
+    reason: 'Perfect breakfast with 30g protein to kickstart your weight loss day',
+    ingredients: [
+      { ingredient: findIngredient('greek-yogurt'), amount: 200 },
+      { ingredient: findIngredient('oats'), amount: 30 },
+      { ingredient: findIngredient('almonds'), amount: 15 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('greek-yogurt'), amount: 200 },
+      { ingredient: findIngredient('oats'), amount: 30 },
+      { ingredient: findIngredient('almonds'), amount: 15 }
+    ]),
+    instructions: [
+      'Mix Greek yogurt with oats in a bowl',
+      'Top with chopped almonds',
+      'Let sit for 5 minutes to soften oats',
+      'Enjoy your protein-packed breakfast!'
+    ]
+  },
+  {
+    id: 'wl-chicken-lunch',
+    name: 'Grilled Chicken Power Bowl',
+    category: 'Lunch',
+    cuisine: 'American',
+    difficulty: 'Medium',
+    prepTime: 25,
+    reason: 'High-protein lunch with 45g protein to keep you satisfied and support weight loss',
+    ingredients: [
+      { ingredient: findIngredient('chicken-breast'), amount: 150 },
+      { ingredient: findIngredient('quinoa'), amount: 60 },
+      { ingredient: findIngredient('broccoli'), amount: 100 },
+      { ingredient: findIngredient('avocado'), amount: 50 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('chicken-breast'), amount: 150 },
+      { ingredient: findIngredient('quinoa'), amount: 60 },
+      { ingredient: findIngredient('broccoli'), amount: 100 },
+      { ingredient: findIngredient('avocado'), amount: 50 }
+    ]),
+    instructions: [
+      'Season and grill chicken breast for 6-8 minutes per side',
+      'Cook quinoa according to package instructions',
+      'Steam broccoli until tender',
+      'Slice avocado and arrange in bowl with other ingredients'
+    ]
+  },
+  {
+    id: 'wl-salmon-dinner',
+    name: 'Omega-Rich Salmon Plate',
+    category: 'Dinner',
+    cuisine: 'Mediterranean',
+    difficulty: 'Medium',
+    prepTime: 20,
+    reason: 'Light dinner with 30g protein and healthy fats for evening satisfaction',
+    ingredients: [
+      { ingredient: findIngredient('salmon'), amount: 120 },
+      { ingredient: findIngredient('sweet-potato'), amount: 100 },
+      { ingredient: findIngredient('spinach'), amount: 100 },
+      { ingredient: findIngredient('olive-oil'), amount: 10 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('salmon'), amount: 120 },
+      { ingredient: findIngredient('sweet-potato'), amount: 100 },
+      { ingredient: findIngredient('spinach'), amount: 100 },
+      { ingredient: findIngredient('olive-oil'), amount: 10 }
+    ]),
+    instructions: [
+      'Bake salmon at 400°F for 12-15 minutes',
+      'Roast sweet potato cubes with olive oil',
+      'Sauté spinach until wilted',
+      'Serve together for a balanced meal'
+    ]
+  }
+];
+
+// Muscle Gain Meal Plans (150g protein, 2200 calories)
+const muscleGainPlans: MealSuggestion[] = [
+  {
+    id: 'mg-power-breakfast',
+    name: 'Muscle Building Breakfast',
+    category: 'Breakfast',
+    cuisine: 'American',
+    difficulty: 'Easy',
+    prepTime: 15,
+    reason: 'High-calorie breakfast with 35g protein to fuel muscle growth',
+    ingredients: [
+      { ingredient: findIngredient('eggs'), amount: 120 }, // 2 eggs
+      { ingredient: findIngredient('oats'), amount: 50 },
+      { ingredient: findIngredient('greek-yogurt'), amount: 150 },
+      { ingredient: findIngredient('almonds'), amount: 25 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('eggs'), amount: 120 },
+      { ingredient: findIngredient('oats'), amount: 50 },
+      { ingredient: findIngredient('greek-yogurt'), amount: 150 },
+      { ingredient: findIngredient('almonds'), amount: 25 }
+    ]),
+    instructions: [
+      'Scramble eggs with a little olive oil',
+      'Prepare oatmeal with water or milk',
+      'Serve with Greek yogurt and almonds on the side',
+      'Eat together for maximum protein absorption'
+    ]
+  },
+  {
+    id: 'mg-chicken-lunch',
+    name: 'Muscle Gain Power Lunch',
+    category: 'Lunch',
+    cuisine: 'American',
+    difficulty: 'Medium',
+    prepTime: 30,
+    reason: 'Massive 50g protein lunch to support serious muscle building goals',
+    ingredients: [
+      { ingredient: findIngredient('chicken-breast'), amount: 200 },
+      { ingredient: findIngredient('brown-rice'), amount: 100 },
+      { ingredient: findIngredient('broccoli'), amount: 150 },
+      { ingredient: findIngredient('avocado'), amount: 75 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('chicken-breast'), amount: 200 },
+      { ingredient: findIngredient('brown-rice'), amount: 100 },
+      { ingredient: findIngredient('broccoli'), amount: 150 },
+      { ingredient: findIngredient('avocado'), amount: 75 }
+    ]),
+    instructions: [
+      'Grill chicken breast with your favorite seasonings',
+      'Cook brown rice according to package directions',
+      'Steam broccoli until bright green and tender',
+      'Add sliced avocado for healthy fats and calories'
+    ]
+  }
+];
+
+// Maintenance Meal Plans (100g protein, 1800 calories)
+const maintenancePlans: MealSuggestion[] = [
+  {
+    id: 'mt-balanced-breakfast',
+    name: 'Balanced Morning Start',
+    category: 'Breakfast',
+    cuisine: 'American',
+    difficulty: 'Easy',
+    prepTime: 10,
+    reason: 'Perfectly balanced breakfast with 25g protein for maintenance goals',
+    ingredients: [
+      { ingredient: findIngredient('greek-yogurt'), amount: 150 },
+      { ingredient: findIngredient('oats'), amount: 40 },
+      { ingredient: findIngredient('almonds'), amount: 20 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('greek-yogurt'), amount: 150 },
+      { ingredient: findIngredient('oats'), amount: 40 },
+      { ingredient: findIngredient('almonds'), amount: 20 }
+    ]),
+    instructions: [
+      'Combine Greek yogurt with oats',
+      'Top with chopped almonds',
+      'Mix well and enjoy immediately',
+      'Perfect balance of protein, carbs, and healthy fats'
+    ]
+  },
+  {
+    id: 'mt-salmon-lunch',
+    name: 'Mediterranean Salmon Bowl',
+    category: 'Lunch',
+    cuisine: 'Mediterranean',
+    difficulty: 'Medium',
+    prepTime: 25,
+    reason: 'Balanced lunch with 35g protein and healthy Mediterranean flavors',
+    ingredients: [
+      { ingredient: findIngredient('salmon'), amount: 120 },
+      { ingredient: findIngredient('quinoa'), amount: 70 },
+      { ingredient: findIngredient('bell-pepper'), amount: 100 },
+      { ingredient: findIngredient('olive-oil'), amount: 12 }
+    ],
+    totalNutrition: calculateTotalNutrition([
+      { ingredient: findIngredient('salmon'), amount: 120 },
+      { ingredient: findIngredient('quinoa'), amount: 70 },
+      { ingredient: findIngredient('bell-pepper'), amount: 100 },
+      { ingredient: findIngredient('olive-oil'), amount: 12 }
+    ]),
+    instructions: [
+      'Pan-sear salmon with herbs and lemon',
+      'Cook quinoa until fluffy',
+      'Roast bell peppers with olive oil',
+      'Combine in a bowl for a Mediterranean feast'
+    ]
+  }
+];
+
+export const presetMealPlans = {
+  'weight-loss': weightLossPlans,
+  'muscle-gain': muscleGainPlans,
+  'maintenance': maintenancePlans
 };
 
-// AI meal generation function
+// AI Meal Generation Function
 export const generateAIMealPlan = async (
   cuisine: string,
   mealType: string,
   targets: { protein: number; carbs: number; fats: number; calories: number }
 ): Promise<MealSuggestion> => {
   // Simulate AI processing time
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise(resolve => setTimeout(resolve, 1500));
 
-  // Select ingredients based on cuisine and targets
   const cuisineIngredients = {
-    'thai': ['chicken-breast', 'brown-rice', 'broccoli'],
-    'italian': ['salmon', 'quinoa', 'spinach'],
-    'mexican': ['chicken-breast', 'sweet-potato', 'avocado'],
-    'mediterranean': ['salmon', 'quinoa', 'spinach', 'avocado'],
-    'american': ['chicken-breast', 'brown-rice', 'broccoli'],
-    'asian': ['salmon', 'brown-rice', 'spinach'],
-    'indian': ['chicken-breast', 'quinoa', 'spinach']
+    thai: ['chicken-breast', 'brown-rice', 'bell-pepper', 'spinach'],
+    italian: ['chicken-breast', 'quinoa', 'broccoli', 'olive-oil'],
+    mexican: ['chicken-breast', 'sweet-potato', 'bell-pepper', 'avocado'],
+    mediterranean: ['salmon', 'quinoa', 'spinach', 'olive-oil'],
+    american: ['chicken-breast', 'brown-rice', 'broccoli', 'almonds'],
+    indian: ['chicken-breast', 'brown-rice', 'spinach', 'olive-oil'],
+    asian: ['salmon', 'brown-rice', 'broccoli', 'bell-pepper']
   };
 
   const selectedIngredients = cuisineIngredients[cuisine as keyof typeof cuisineIngredients] || cuisineIngredients.american;
   
-  // Calculate portions to meet targets (simplified algorithm)
-  const mealIngredients = selectedIngredients.map(id => {
+  // Calculate portions to meet targets
+  const mealIngredients = selectedIngredients.map((id, index) => {
     const ingredient = findIngredient(id);
     let amount = 100; // Base amount
     
-    // Adjust based on targets and ingredient type
+    // Adjust amounts based on targets and ingredient type
     if (ingredient.category === 'Protein') {
-      amount = Math.round((targets.protein / ingredient.nutritionPer100g.protein) * 100 * 0.6);
+      amount = Math.round((targets.protein * 0.6) / (ingredient.nutritionPer100g.protein / 100));
     } else if (ingredient.category === 'Carbs') {
-      amount = Math.round((targets.carbs / ingredient.nutritionPer100g.carbs) * 100 * 0.5);
+      amount = Math.round((targets.carbs * 0.5) / (ingredient.nutritionPer100g.carbs / 100));
     } else if (ingredient.category === 'Fats') {
-      amount = Math.round((targets.fats / ingredient.nutritionPer100g.fats) * 100 * 0.4);
+      amount = Math.round((targets.fats * 0.4) / (ingredient.nutritionPer100g.fats / 100));
     }
     
-    // Keep amounts reasonable
-    amount = Math.max(50, Math.min(amount, 250));
-    
-    return { ingredientId: id, amount };
+    return { ingredient, amount: Math.min(Math.max(amount, 50), 200) };
   });
 
-  const cuisineNames = {
-    'thai': 'Thai',
-    'italian': 'Italian',
-    'mexican': 'Mexican',
-    'mediterranean': 'Mediterranean',
-    'american': 'American',
-    'asian': 'Asian',
-    'indian': 'Indian'
-  };
-
-  const mealName = `AI ${cuisineNames[cuisine as keyof typeof cuisineNames] || 'Fusion'} ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`;
+  const totalNutrition = calculateTotalNutrition(mealIngredients);
 
   return {
     id: `ai-${cuisine}-${mealType}-${Date.now()}`,
-    name: mealName,
+    name: `AI ${cuisine.charAt(0).toUpperCase() + cuisine.slice(1)} ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`,
     category: mealType.charAt(0).toUpperCase() + mealType.slice(1),
-    cuisine: cuisineNames[cuisine as keyof typeof cuisineNames] || 'Fusion',
+    cuisine: cuisine.charAt(0).toUpperCase() + cuisine.slice(1),
     difficulty: 'Medium',
     prepTime: 25,
-    reason: `Custom ${cuisine} recipe designed to provide ${targets.protein.toFixed(0)}g protein, ${targets.carbs.toFixed(0)}g carbs, and ${targets.fats.toFixed(0)}g fats`,
-    ingredients: mealIngredients.map(({ ingredientId, amount }) => ({
-      ingredient: findIngredient(ingredientId),
-      amount
-    })),
-    totalNutrition: calculateMealNutrition(mealIngredients),
+    reason: `Custom ${cuisine} ${mealType} designed to provide ${targets.protein.toFixed(0)}g protein and ${targets.calories.toFixed(0)} calories`,
+    ingredients: mealIngredients,
+    totalNutrition,
     instructions: [
-      'Prepare all ingredients according to your preference',
-      `Cook using traditional ${cuisine} techniques`,
-      'Season with appropriate spices and herbs',
-      'Combine all ingredients and serve hot',
-      'Enjoy your custom AI-generated meal!'
+      `Prepare your ${cuisine} ${mealType} with authentic flavors`,
+      'Cook protein source with traditional seasonings',
+      'Prepare carbohydrates according to cuisine style',
+      'Combine ingredients with appropriate spices and herbs',
+      'Serve hot and enjoy your custom meal!'
     ]
   };
 };
